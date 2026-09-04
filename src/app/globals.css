@@ -1,0 +1,684 @@
+@import "tailwindcss";
+@import "shadcn/tailwind.css";
+
+/* ---------------------------------------------------------------------------
+   Design tokens
+   ---------------------------------------------------------------------------
+   The site is not "light mode with a dark mode". It is a sequence of art-
+   directed surfaces that alternate between cream and near-black. Any element
+   can be dropped onto either surface and inherit the right ink, hairline and
+   muted values from `[data-surface]` — no per-component colour props, no
+   `dark:` variant soup.
+--------------------------------------------------------------------------- */
+
+@theme inline {
+  /* Contextual — resolved from the nearest [data-surface] ancestor. */
+  --color-bg: var(--surface-bg);
+  --color-fg: var(--surface-fg);
+  --color-muted: var(--surface-muted);
+  --color-faint: var(--surface-faint);
+  --color-hairline: var(--surface-hairline);
+  --color-hairline-strong: var(--surface-hairline-strong);
+
+  /* Fixed brand values — never change with surface. */
+  --color-cream: #f2efe9;
+  --color-void: #0b0b0b;
+  --color-ink: #111111;
+  --color-paper: #f5f5f5;
+  --color-accent: #7257ff;
+  --color-signal: #b6e53b;
+
+  /* shadcn primitives read these; point them at our surface system so any
+     primitive we pull in inherits the art direction instead of neutral grey. */
+  --color-background: var(--surface-bg);
+  --color-foreground: var(--surface-fg);
+  --color-border: var(--surface-hairline);
+  --color-input: var(--surface-hairline);
+  --color-ring: var(--color-accent);
+  --color-popover: var(--surface-bg);
+  --color-popover-foreground: var(--surface-fg);
+  --color-muted-foreground: var(--surface-muted);
+  --color-primary: var(--surface-fg);
+  --color-primary-foreground: var(--surface-bg);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Type scale. Display sizes are fluid; metadata sizes are fixed so mono
+     labels stay legible and consistent at every breakpoint. */
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 1.1;
+  --text-xs: 0.6875rem;
+  --text-xs--line-height: 1.35;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.6;
+  --text-lead: clamp(1.0625rem, 0.95rem + 0.45vw, 1.3125rem);
+  --text-lead--line-height: 1.45;
+  --text-statement: clamp(1.5rem, 0.9rem + 2.2vw, 2.75rem);
+  --text-statement--line-height: 1.02;
+  --text-section: clamp(3rem, 1rem + 8vw, 9rem);
+  --text-section--line-height: 0.86;
+  --text-display: clamp(3.5rem, -0.25rem + 13.2vw, 13rem);
+  --text-display--line-height: 0.78;
+
+  /* Radius: near-zero by design. Rounded cards are the fastest way to make
+     this look like every other portfolio. */
+  --radius: 2px;
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
+
+  /* Motion. Mirrored in src/lib/motion.ts so CSS and Motion stay in sync. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --duration-fast: 180ms;
+  --duration-base: 320ms;
+  --duration-slow: 640ms;
+  --duration-reveal: 900ms;
+}
+
+/* Layout rhythm. Not utilities — read directly by the grid helpers below. */
+:root {
+  --gutter: clamp(1.25rem, 4.5vw, 5rem);
+  --shell-max: 1760px;
+  --nav-h: 4.5rem;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --nav-h: 3.75rem;
+  }
+}
+
+/* --- Surfaces ------------------------------------------------------------ */
+
+[data-surface="light"] {
+  --surface-bg: var(--color-cream);
+  --surface-fg: var(--color-ink);
+  --surface-muted: rgb(17 17 17 / 0.58);
+  --surface-faint: rgb(17 17 17 / 0.36);
+  --surface-hairline: rgb(0 0 0 / 0.12);
+  --surface-hairline-strong: rgb(0 0 0 / 0.24);
+  color-scheme: light;
+}
+
+[data-surface="dark"] {
+  --surface-bg: var(--color-void);
+  --surface-fg: var(--color-paper);
+  --surface-muted: rgb(245 245 245 / 0.56);
+  --surface-faint: rgb(245 245 245 / 0.32);
+  --surface-hairline: rgb(255 255 255 / 0.1);
+  --surface-hairline-strong: rgb(255 255 255 / 0.22);
+  color-scheme: dark;
+}
+
+/* Warm surface — the My Local Loop case study only. A cream ground with forest
+   ink and gold/forest accents, the deliberate opposite of the dark technical
+   surface Expird runs on. Additive: nothing above changes, and the shared
+   exhibit plate is re-tinted below so screenshots read as drawings on cream
+   rather than sitting on a dark void. */
+[data-surface="warm"] {
+  --surface-bg: #f3eee3;
+  --surface-fg: #1f2d26;
+  --surface-muted: rgb(31 45 38 / 0.64);
+  --surface-faint: rgb(31 45 38 / 0.42);
+  --surface-hairline: rgb(45 74 62 / 0.16);
+  --surface-hairline-strong: rgb(45 74 62 / 0.32);
+  color-scheme: light;
+}
+
+/* Re-tint the exhibit plate for the cream ground. Unlayered, so these win over
+   the layered `.exhibit-*` defaults without touching them. */
+[data-surface="warm"] .exhibit-grid {
+  background-image:
+    linear-gradient(to right, rgb(45 74 62 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(45 74 62 / 0.06) 1px, transparent 1px);
+}
+[data-surface="warm"] .exhibit-glow {
+  background: radial-gradient(
+    ellipse at center,
+    rgb(156 122 60 / 0.2) 0%,
+    rgb(45 74 62 / 0.1) 42%,
+    rgb(45 74 62 / 0) 72%
+  );
+}
+[data-surface="warm"] .exhibit-mark::before,
+[data-surface="warm"] .exhibit-mark::after {
+  background-color: rgb(45 74 62 / 0.34);
+}
+/* The plate's own ground (hardcoded `bg-void` in ProductExhibit) would be a
+   dark sliver on cream; warm it so the frame stays in the palette. */
+[data-surface="warm"] .bg-void {
+  background-color: #ece4d6;
+}
+
+/* Marketplace-loop orbit: a single accent traveller circling the ring to read
+   the loop as continuous. Slow, and stilled entirely under reduced motion. */
+@keyframes mll-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.mll-orbit {
+  animation: mll-orbit 22s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mll-orbit {
+    animation: none;
+  }
+}
+
+/* Terminal surface — the Mintlytics case study only. A midnight-navy ground with
+   cool near-white ink and cyan/violet data accents: a market-data terminal, the
+   opposite of both Expird's flat void and My Local Loop's cream. Additive; the
+   exhibit plate is re-tinted cyan/violet below, and a very faint market grid
+   sits behind the whole article. */
+[data-surface="terminal"] {
+  --surface-bg: #080b16;
+  --surface-fg: #e9edf7;
+  --surface-muted: rgb(233 237 247 / 0.58);
+  --surface-faint: rgb(233 237 247 / 0.34);
+  --surface-hairline: rgb(120 180 220 / 0.14);
+  --surface-hairline-strong: rgb(120 180 220 / 0.26);
+  color-scheme: dark;
+  /* Faint market grid behind everything — restrained, static, edge-safe. */
+  background-image:
+    linear-gradient(rgb(120 180 220 / 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(120 180 220 / 0.022) 1px, transparent 1px);
+  background-size: clamp(48px, 5vw, 72px) clamp(48px, 5vw, 72px);
+}
+
+[data-surface="terminal"] .exhibit-grid {
+  background-image:
+    linear-gradient(to right, rgb(120 180 220 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(120 180 220 / 0.05) 1px, transparent 1px);
+}
+[data-surface="terminal"] .exhibit-glow {
+  background: radial-gradient(
+    ellipse at center,
+    rgb(34 211 238 / 0.16) 0%,
+    rgb(139 92 246 / 0.1) 40%,
+    rgb(139 92 246 / 0) 72%
+  );
+}
+[data-surface="terminal"] .exhibit-mark::before,
+[data-surface="terminal"] .exhibit-mark::after {
+  background-color: rgb(34 211 238 / 0.4);
+}
+/* Plate ground: a touch of navy over the hardcoded void. */
+[data-surface="terminal"] .bg-void {
+  background-color: #0a0e1a;
+}
+
+/* Status light: a slow, restrained breath for the data-terminal readouts. */
+@keyframes mint-pulse {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+.mint-pulse {
+  animation: mint-pulse 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mint-pulse {
+    animation: none;
+  }
+}
+
+/* --- Base ---------------------------------------------------------------- */
+
+@layer base {
+  * {
+    border-color: var(--surface-hairline);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--surface-bg);
+    color: var(--surface-fg);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-paper);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  /* The browser default focus ring is removed only where we draw our own. */
+  [data-focus-ring="custom"]:focus-visible {
+    outline: none;
+  }
+}
+
+@layer components {
+  /* Editorial 12-column grid. Sections opt in rather than everything living
+     inside a centred container. */
+  .shell {
+    width: 100%;
+    max-width: var(--shell-max);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .shell-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(0.75rem, 1.5vw, 1.75rem);
+  }
+
+  /* Mono metadata label. Used for section labels, status, timestamps. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    line-height: 1.1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* Display type: tight, optically corrected, never synthesised. */
+  .display {
+    font-family: var(--font-sans);
+    font-weight: 900;
+    letter-spacing: -0.045em;
+    line-height: 0.78;
+    text-transform: uppercase;
+  }
+}
+
+@layer components {
+  /* Status light. Barely moves — a slow breath, not a blinking LED. */
+  .signal-dot {
+    position: relative;
+    display: inline-block;
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 999px;
+    background-color: var(--color-signal);
+  }
+
+  .signal-dot::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 999px;
+    background-color: var(--color-signal);
+    opacity: 0.24;
+    animation: signal-breathe 2600ms var(--ease-in-out-quart) infinite;
+  }
+
+  @keyframes signal-breathe {
+    0%,
+    100% {
+      opacity: 0.22;
+      transform: scale(0.72);
+    }
+    50% {
+      opacity: 0.04;
+      transform: scale(1.15);
+    }
+  }
+}
+
+/* --- Mobile menu ----------------------------------------------------------
+   Keyframes rather than transitions: Radix's presence layer waits for a CSS
+   animation to finish before unmounting, which gives us a real exit.
+-------------------------------------------------------------------------- */
+
+/* Popover panels grow from the edge they are anchored to — Radix hands us the
+   origin, so the panel appears to come out of its trigger rather than fading in
+   at an arbitrary point. */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes panel-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes menu-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes menu-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes menu-panel-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes menu-panel-out {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes menu-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.6em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer components {
+  /* --- Hero backdrop ------------------------------------------------------
+     Warm paper, an oversized editorial grid, print registration marks and a
+     physical purple spill. One set of cell dimensions drives both the grid and
+     the crosshair positions, so the marks always land on real intersections
+     rather than being eyeballed into place. */
+  .hero-backdrop {
+    --grid-w: clamp(180px, 21vw, 320px);
+    --grid-h: clamp(150px, 21vh, 200px);
+  }
+
+  .hero-grid {
+    background-image:
+      linear-gradient(to right, rgb(20 20 20 / 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(20 20 20 / 0.035) 1px, transparent 1px);
+    background-size: var(--grid-w) var(--grid-h);
+    /* Anchors the first column rule to the gutter, so the grid agrees with the
+       type rather than cutting across it at a random offset. */
+    background-position: var(--gutter) 0;
+  }
+
+  /* Light bouncing off the cavity onto the paper. No `filter: blur()` — the
+     gradient's own falloff is softer and costs nothing to composite. */
+  .hero-spill {
+    background: radial-gradient(
+      ellipse at center,
+      rgb(108 66 255 / 0.15) 0%,
+      rgb(108 66 255 / 0.06) 34%,
+      rgb(108 66 255 / 0) 70%
+    );
+  }
+
+  .hero-mark::before,
+  .hero-mark::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color: rgb(20 20 20 / 0.18);
+    transform: translate(-50%, -50%);
+  }
+
+  .hero-mark::before {
+    inline-size: 12px;
+    block-size: 1px;
+  }
+
+  .hero-mark::after {
+    inline-size: 1px;
+    block-size: 12px;
+  }
+
+  .hero-note {
+    font-family: var(--font-mono);
+    font-size: 0.5625rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgb(20 20 20 / 0.26);
+  }
+
+  /* A product's wordmark rendered in its own gradient.
+   *
+   * The gradient is painted on the text span itself rather than on the heading:
+   * the heading's reveal transforms an element in between, and a transformed
+   * ancestor breaks the clip while it animates. Solid colour is the declared
+   * value, so anywhere `background-clip: text` is unavailable the title is
+   * still visible rather than transparent. */
+  .wordmark {
+    /* The fallback lives here, not inline: an inline `color` would out-specify
+       the transparent override below and paint straight over the gradient. */
+    color: var(--wordmark-from);
+    background-image: linear-gradient(
+      100deg,
+      var(--wordmark-from),
+      var(--wordmark-to)
+    );
+  }
+
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    .wordmark {
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  }
+
+  /* Character-by-character reveal. The stagger lives entirely in
+     `transition-delay`, set per character by <TypeLine>. Without the attribute
+     — reduced motion, or no JavaScript via the <noscript> override — the text
+     is simply visible. */
+  .type-line {
+    white-space: pre-wrap;
+  }
+
+  .type-line[data-typed="pending"] > span {
+    opacity: 0;
+  }
+
+  .type-line[data-typed="running"] > span {
+    opacity: 1;
+    transition: opacity 130ms linear;
+  }
+
+  /* The blinking underscore on the navigation's terminal mark.
+   *
+   * Its own keyframe rather than the boot caret's: this one lives on the page
+   * permanently, so it has to end on `opacity: 1`. Under reduced motion the
+   * global rule collapses every animation to a single 0.01ms pass, and a
+   * keyframe that finished at zero would leave the underscore missing. */
+  .caret-blink {
+    animation: caret-blink 1100ms linear infinite;
+  }
+
+  @keyframes caret-blink {
+    0%,
+    45% {
+      opacity: 1;
+    }
+    50%,
+    95% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* Block caret for the hero boot line. */
+  .boot-caret {
+    display: inline-block;
+    inline-size: 0.55em;
+    block-size: 1em;
+    background-color: currentColor;
+    animation: boot-blink 900ms steps(2, jump-none) infinite;
+  }
+
+  @keyframes boot-blink {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    50.01%,
+    100% {
+      opacity: 0;
+    }
+  }
+}
+
+@layer components {
+  /* --- Product exhibits ----------------------------------------------------
+     Real product screens, presented as technical plates rather than pasted in.
+
+     Every layer here is the dark-surface twin of something already on the cream
+     hero — the same grid, the same registration crosshair, the same purple
+     spill — so a screenshot reads as another drawing in the set rather than as
+     a photograph dropped onto it. All three are decorative and sit behind the
+     plate; the screen itself is never tinted or overlaid. */
+  .exhibit-grid {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+    background-size: clamp(56px, 6vw, 96px) clamp(56px, 6vw, 96px);
+    /* Fades the grid out before it reaches the page edge, so it reads as paper
+       under the plate rather than as a background that runs off. */
+    mask-image: radial-gradient(ellipse 78% 68% at 50% 50%, #000 18%, transparent 100%);
+  }
+
+  .exhibit-glow {
+    background: radial-gradient(
+      ellipse at center,
+      rgb(114 87 255 / 0.26) 0%,
+      rgb(114 87 255 / 0.09) 38%,
+      rgb(114 87 255 / 0) 70%
+    );
+  }
+
+  /* Registration crosshair. Same construction as `.hero-mark`, inverted for a
+     dark ground. */
+  .exhibit-mark::before,
+  .exhibit-mark::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color: rgb(255 255 255 / 0.26);
+    transform: translate(-50%, -50%);
+  }
+
+  .exhibit-mark::before {
+    inline-size: 11px;
+    block-size: 1px;
+  }
+
+  .exhibit-mark::after {
+    inline-size: 1px;
+    block-size: 11px;
+  }
+}
+
+@layer utilities {
+  /* Masked line reveal. The wrapper clips, the child slides. Used by
+     <MaskReveal> and by CSS-only reveals that don't need JS. */
+  .mask-line {
+    display: block;
+    overflow: hidden;
+    /* Descenders would otherwise be clipped by the mask. */
+    padding-block-end: 0.12em;
+    margin-block-end: -0.12em;
+  }
+
+  /* Cursor depth. `--px` / `--py` are written once per frame on the hero
+     container by usePointerParallax; each layer picks its own multiplier via
+     `--depth`, so the whole composition parallaxes from a single listener. */
+  .depth {
+    transform: translate3d(
+      calc(var(--px, 0) * var(--depth, 0) * 1px),
+      calc(var(--py, 0) * var(--depth, 0) * 0.6px),
+      0
+    );
+  }
+
+  .hairline-t {
+    border-top: 1px solid var(--surface-hairline);
+  }
+
+  .hairline-b {
+    border-bottom: 1px solid var(--surface-hairline);
+  }
+}
+
+/* --- Grain ----------------------------------------------------------------
+   A single fixed overlay rather than per-section backgrounds: one paint, no
+   layout cost, and it survives surface changes. Inlined as a data URI so it
+   costs no request.
+-------------------------------------------------------------------------- */
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* --- Reduced motion -------------------------------------------------------
+   Entrances collapse to a short fade; ambient movement stops entirely. Motion
+   Motion honours the same preference via <MotionProvider reducedMotion="user">.
+-------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .grain {
+    display: none;
+  }
+}
