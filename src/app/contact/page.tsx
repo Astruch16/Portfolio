@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
-import { EmailAddress } from "@/components/contact/email-address";
+import { ContactForm } from "@/components/contact/contact-form";
 import { LocalTime } from "@/components/contact/local-time";
 import { StatusDot } from "@/components/layout/status-dot";
 import { DrawLine, Lift, MaskReveal } from "@/components/motion/reveal";
@@ -11,11 +11,9 @@ import { contact, site } from "@/data/site";
 /**
  * The contact page.
  *
- * Deliberately not a form. A form on a personal site adds a mail service, an
- * API route, a secret to rotate and a spam surface — and asks the reader to
- * type into a box that may or may not deliver. A prominent address they can
- * open or copy has no failure mode and no infrastructure, and the reader gets
- * a copy of what they sent in their own outbox.
+ * The form is the point: it keeps Adam's address out of the page, the bundle
+ * and this repository, where a published address would be scraped within days.
+ * The destination mailbox is server-side configuration.
  *
  * Two dark regions either side of a light one, so the page has the same
  * surface rhythm as the rest of the site and the nav inverts through it.
@@ -108,13 +106,11 @@ export default function ContactPage() {
           </Lift>
         </header>
 
-        {/* The address gets the whole width and the largest type on the page:
-            it is the one thing this page exists to hand over. */}
-        <div className="shell pt-[clamp(3rem,9vh,6rem)] pb-[clamp(3.5rem,10vh,7rem)]">
+        <div className="shell pt-[clamp(2.5rem,7vh,4.5rem)] pb-[clamp(3.5rem,10vh,7rem)]">
           <Lift onView delay={0.22}>
-            <p className="label text-faint">Primary</p>
-            <div className="mt-5">
-              <EmailAddress email={contact.email} subject={contact.subject} />
+            <p className="label text-faint">Write to me</p>
+            <div className="mt-8">
+              <ContactForm />
             </div>
           </Lift>
         </div>

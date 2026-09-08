@@ -28,15 +28,14 @@ export type ContactChannel = {
   note: string;
 };
 
+/**
+ * No address here on purpose.
+ *
+ * Messages go through the form, which posts to a Server Action; the destination
+ * mailbox lives in `CONTACT_TO_EMAIL` on the server and never reaches the
+ * client bundle, this repository, or a scraper reading the page.
+ */
 export const contact = {
-  /**
-   * PLACEHOLDER-ish: this is Adam's real address and already public in this
-   * repo's commit history, but it's a personal Gmail. Swap it for an address on
-   * the real domain once that domain is confirmed — see `site.url`.
-   */
-  email: "adamstruch@gmail.com",
-  /** Prefilled so a message arrives already sorted. */
-  subject: "Hello from your portfolio",
   /** IANA zone, so the clock is computed rather than claimed. */
   timezone: "America/Vancouver",
   channels: [
