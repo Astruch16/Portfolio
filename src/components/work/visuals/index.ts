@@ -1,5 +1,5 @@
+import { CashVisual } from "@/components/work/visuals/cash-visual";
 import { ChartVisual } from "@/components/work/visuals/chart-visual";
-import { CinematicVisual } from "@/components/work/visuals/cinematic-visual";
 import { CommerceVisual } from "@/components/work/visuals/commerce-visual";
 import { MapVisual } from "@/components/work/visuals/map-visual";
 import { PropertyVisual } from "@/components/work/visuals/property-visual";
@@ -15,5 +15,5 @@ export const COMPOSITIONS: Record<
   commerce: CommerceVisual,
   chart: ChartVisual,
   property: PropertyVisual,
-  cinematic: CinematicVisual,
+  cash: CashVisual,
 };

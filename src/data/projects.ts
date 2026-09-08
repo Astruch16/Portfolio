@@ -22,7 +22,7 @@ export type ProjectVisual =
   | "commerce"
   | "chart"
   | "property"
-  | "cinematic";
+  | "cash";
 
 /** How the row is composed. `full` lets the visual carry the whole width. */
 export type ProjectLayout = "right" | "left" | "full";
@@ -159,16 +159,17 @@ export const projects: Project[] = [
     layout: "left",
   },
   {
-    slug: "fighting-kiwi",
+    slug: "lively-cash",
     index: "05",
-    name: "Fighting Kiwi",
-    kind: "Studio",
-    discipline: "Film & Photography",
+    name: "Lively Cash",
+    // Built for a client rather than owned, which is worth saying plainly.
+    kind: "Client",
+    discipline: "ATM Services / Local Business",
     statement: null,
     stack: STACK_PENDING,
     status: null,
-    accent: "#e8e8ea",
-    visual: "cinematic",
+    accent: "#2fbd74",
+    visual: "cash",
     layout: "full",
   },
 ];
