@@ -9,8 +9,10 @@ import { HeroCaret } from "@/components/hero/hero-boot";
 import { HeroMeta } from "@/components/hero/hero-meta";
 import { StackRuntime } from "@/components/hero/stack-runtime";
 import { HeroVisual } from "@/components/hero/hero-visual";
+import { NameMosaic } from "@/components/hero/name-mosaic";
 import { TypeLine } from "@/components/hero/type-line";
 import { Lift } from "@/components/motion/reveal";
+import { nameMosaic } from "@/data/name-mosaic";
 import { site } from "@/data/site";
 import { STEP, useBootSequence } from "@/hooks/use-boot-sequence";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -45,6 +47,10 @@ export function Hero() {
   // container and the `depth` elements read them in CSS.
   const { ref } = usePointerParallax<HTMLDivElement>();
   const pinned = useMediaQuery("(min-width: 1024px)");
+  // Below this the display type is small enough that a symbol would be four
+  // pixels across — a smudge rather than a mosaic — so the name stays solid
+  // and the nine hundred cells are never sent to a phone at all.
+  const mosaic = useMediaQuery("(min-width: 768px)");
   const still = useMediaQuery("(prefers-reduced-motion: reduce)");
 
   const booting = !still;
@@ -140,20 +146,39 @@ export function Hero() {
               {site.name} — {site.role}
             </span>
             <span aria-hidden>
-              <TypeLine
-                className="block"
-                text="Adam"
-                typed={reached(STEP.name)}
-                enabled={booting}
-                charMs={NAME_MS}
-              />
-              <TypeLine
-                className="block"
-                text="Struch"
-                typed={reached(STEP.surname)}
-                enabled={booting}
-                charMs={NAME_MS}
-              />
+              {mosaic ? (
+                <>
+                  <NameMosaic
+                    line={nameMosaic[0]}
+                    typed={reached(STEP.name)}
+                    enabled={booting}
+                    charMs={NAME_MS}
+                  />
+                  <NameMosaic
+                    line={nameMosaic[1]}
+                    typed={reached(STEP.surname)}
+                    enabled={booting}
+                    charMs={NAME_MS}
+                  />
+                </>
+              ) : (
+                <>
+                  <TypeLine
+                    className="block"
+                    text="Adam"
+                    typed={reached(STEP.name)}
+                    enabled={booting}
+                    charMs={NAME_MS}
+                  />
+                  <TypeLine
+                    className="block"
+                    text="Struch"
+                    typed={reached(STEP.surname)}
+                    enabled={booting}
+                    charMs={NAME_MS}
+                  />
+                </>
+              )}
             </span>
           </h1>
 

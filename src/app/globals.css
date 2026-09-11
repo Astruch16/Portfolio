@@ -682,3 +682,77 @@
     display: none;
   }
 }
+
+@layer components {
+  /* --- Name mosaic ---------------------------------------------------------
+     The hero name rebuilt out of code symbols. The cell grid comes from the
+     real letterforms (see scripts/generate-name-mosaic.mjs); this only paints
+     it and moves it.
+
+     Cells carry the reveal, groups carry the float. Splitting the two is what
+     keeps nine hundred symbols affordable: the opacity transitions run once
+     during the boot and are then done, and only the eight groups hold a
+     composited layer afterwards. */
+  .mosaic {
+    position: relative;
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: 0;
+    /* Height comes from the data: the generator reads the display face's own
+       leading, so the two lines stack exactly where the solid type used to. */
+  }
+
+  .mosaic-ink {
+    position: absolute;
+    left: 0;
+    display: block;
+    width: 100%;
+  }
+
+  .mosaic-group {
+    position: absolute;
+    inset: 0;
+    display: block;
+    animation: mosaic-float var(--float-dur) var(--ease-in-out-quart)
+      var(--float-delay) infinite alternate;
+    will-change: transform;
+  }
+
+  .mosaic-cell {
+    position: absolute;
+    display: block;
+    /* Larger than the cell pitch, so neighbours just touch and the strokes
+       read as solid mass rather than as scattered dots. */
+    /* Centred on its sample point, so the mosaic sits on the letterform rather
+       than hanging below and to the right of it. */
+    translate: -50% -50%;
+    font-size: 0.0777em;
+    line-height: 1;
+  }
+
+  .mosaic[data-typed="pending"] .mosaic-cell {
+    opacity: 0;
+  }
+
+  .mosaic[data-typed="running"] .mosaic-cell {
+    opacity: 1;
+    transition: opacity 240ms var(--ease-out-quart);
+  }
+
+  @keyframes mosaic-float {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(var(--fx), var(--fy), 0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mosaic-group {
+    animation: none;
+    will-change: auto;
+  }
+}
