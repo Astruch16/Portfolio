@@ -100,6 +100,34 @@ export function parseContactMessage(form: FormData): ParseResult {
 }
 
 /**
+ * How complete a draft looks, for the live transmission panel.
+ *
+ * Deliberately cheaper than `parseContactMessage` — it runs on every keystroke
+ * and only decides what the panel's status light says. The real rules stay on
+ * the server; this never gates a submission.
+ */
+export function draftStatus(draft: {
+  name: string;
+  email: string;
+  topic: string;
+  message: string;
+}): "empty" | "incomplete" | "ready" {
+  const filled = [draft.name, draft.email, draft.topic, draft.message].filter(
+    (value) => value.trim().length > 0,
+  );
+
+  if (filled.length === 0) return "empty";
+
+  const complete =
+    draft.name.trim().length >= LIMITS.name.min &&
+    EMAIL.test(draft.email.trim()) &&
+    TOPICS.includes(draft.topic.trim() as Topic) &&
+    draft.message.trim().length >= LIMITS.message.min;
+
+  return complete ? "ready" : "incomplete";
+}
+
+/**
  * The result of a submission.
  *
  * Lives here rather than beside the action: a `"use server"` module may only
