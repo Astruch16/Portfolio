@@ -5,10 +5,11 @@ import { useActionState, useCallback, useEffect, useId, useRef, useState } from 
 
 import { sendContactMessage } from "@/app/contact/actions";
 import { sequenceTone } from "@/components/case/sequence-tones";
+import { TopicSelect } from "@/components/contact/topic-select";
 import { Transmission, type Draft } from "@/components/contact/transmission";
 import { Magnetic } from "@/components/motion/magnetic";
 import { Lift } from "@/components/motion/reveal";
-import { initialContactState, LIMITS, TOPICS } from "@/lib/contact-message";
+import { initialContactState, LIMITS } from "@/lib/contact-message";
 import { cn } from "@/lib/utils";
 
 /**
@@ -118,16 +119,28 @@ export function ContactForm() {
     message: "",
   });
 
+  // The three typed fields are read off the form; the topic reports itself
+  // through `onValueChange`. Reading it back out of FormData as well would race
+  // with the control's own hidden input and occasionally blank the panel.
   const readDraft = useCallback((form: HTMLFormElement) => {
     const data = new FormData(form);
-    const value = (name: string) => String(data.get(name) ?? "");
-    setDraft({
+    const value = (field: string) => String(data.get(field) ?? "");
+    setDraft((current) => ({
+      ...current,
       name: value("name"),
       email: value("email"),
-      topic: value("topic"),
       message: value("message"),
-    });
+    }));
   }, []);
+
+  // Typed loosely on purpose. React resets an uncontrolled form once its
+  // action settles, and the select answers that reset by reporting its value as
+  // `undefined` — which the panel then tried to call `.trim()` on.
+  const setTopic = useCallback(
+    (topic: string | undefined) =>
+      setDraft((current) => ({ ...current, topic: topic ?? "" })),
+    [],
+  );
 
   // Absent without JavaScript, which the server reads as "cannot judge" rather
   // than as a bot. Only a suspiciously fast round trip is ever rejected.
@@ -259,36 +272,16 @@ export function ContactForm() {
 
             <Lift onView delay={0.16} className="sm:col-span-2">
               <Field index={2} label="About" htmlFor={field("topic")} error={state.errors.topic}>
-                <div className="relative">
-                  <select
-                    id={field("topic")}
-                    name="topic"
-                    required
-                    defaultValue={state.values?.topic ?? ""}
-                    aria-invalid={Boolean(state.errors.topic)}
-                    aria-describedby={
-                      state.errors.topic ? `${field("topic")}-error` : undefined
-                    }
-                    className={cn(
-                      FIELD,
-                      "cursor-pointer appearance-none pr-8",
-                      state.errors.topic && "border-[#e0a94f]",
-                    )}
-                  >
-                    <option value="" disabled>
-                      Choose one
-                    </option>
-                    {TOPICS.map((topic) => (
-                      <option key={topic} value={topic} className="bg-void text-fg">
-                        {topic}
-                      </option>
-                    ))}
-                  </select>
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute top-1/2 right-1 block size-2 -translate-y-2/3 rotate-45 border-r border-b border-current text-faint"
-                  />
-                </div>
+                <TopicSelect
+                  id={field("topic")}
+                  name="topic"
+                  defaultValue={state.values?.topic}
+                  invalid={Boolean(state.errors.topic)}
+                  describedBy={
+                    state.errors.topic ? `${field("topic")}-error` : undefined
+                  }
+                  onValueChange={setTopic}
+                />
               </Field>
             </Lift>
 
