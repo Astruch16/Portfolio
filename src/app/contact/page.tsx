@@ -107,12 +107,10 @@ export default function ContactPage() {
         </header>
 
         <div className="shell pt-[clamp(2.5rem,7vh,4.5rem)] pb-[clamp(3.5rem,10vh,7rem)]">
-          <Lift onView delay={0.22}>
+          <Lift onView delay={0.22} className="mb-8">
             <p className="label text-faint">Write to me</p>
-            <div className="mt-8">
-              <ContactForm />
-            </div>
           </Lift>
+          <ContactForm />
         </div>
       </section>
 
