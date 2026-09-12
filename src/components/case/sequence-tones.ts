@@ -22,3 +22,25 @@ const TONES = [
 export function sequenceTone(index: number, accent: string): string {
   return index === 0 ? accent : TONES[(index - 1) % TONES.length];
 }
+
+/**
+ * The same idea for a cream ground.
+ *
+ * `TONES` is pitched for a dark surface — several of its entries are near-white
+ * and vanish on paper, which is exactly what happened to the last stop of the
+ * about page's route. These are the same hues taken down to where they hold
+ * against cream, at similar weight to each other so the index still reads as a
+ * legend rather than a rainbow.
+ */
+const TONES_LIGHT = [
+  "#2f7d6b",
+  "#b0761a",
+  "#3f6ea8",
+  "#9a4f7a",
+  "#6b8f3d",
+  "#a85434",
+];
+
+export function sequenceToneLight(index: number, accent: string): string {
+  return index === 0 ? accent : TONES_LIGHT[(index - 1) % TONES_LIGHT.length];
+}
