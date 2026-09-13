@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import { Disciplines } from "@/components/about/disciplines";
 import { PathStory } from "@/components/about/path-story";
 import { PortraitPlate } from "@/components/about/portrait-plate";
 import { ArrowSequence } from "@/components/case/arrow-sequence";
@@ -23,8 +24,9 @@ import { about } from "@/data/about";
  * - The story and the route are one scrolling chapter sequence: the prose
  *   plays out on the right while a panel on the left fills in the route and
  *   draws each place as the story reaches it.
- * - The three disciplines run as full-width rows rather than three columns of
- *   bullets, which is what made them read as a skills list.
+ * - The three disciplines are a list set at reading size beside a diagram of
+ *   where they overlap, each in its own colour — the capabilities were tiny
+ *   grey labels, the one part a reader wants to scan and could barely see.
  * - The toolkit is a ruled index; it was a row of bordered pills, the one
  *   genuinely generic component on the site.
  * - The process reuses the arrow sequence the case studies already use, so
@@ -125,38 +127,9 @@ export default function AboutPage() {
             <MaskReveal onView>{about.areasHeadline}</MaskReveal>
           </h2>
 
-          {/* Rows, not columns. Three short bullet lists side by side read as a
-              skills grid; given the full width each discipline reads as a
-              statement with its scope written out beside it. */}
-          <ul className="mt-[clamp(2.5rem,7vh,4.5rem)]">
-            {about.areas.map((area, i) => (
-              <Lift
-                key={area.title}
-                onView
-                delay={i * 0.08}
-                as="li"
-                className="grid gap-x-[clamp(2rem,5vw,5rem)] gap-y-5 border-t border-hairline py-[clamp(1.75rem,4vh,2.75rem)] last:border-b lg:grid-cols-12"
-              >
-                <div className="lg:col-span-4">
-                  <p className="label text-faint">
-                    {String(i + 1).padStart(2, "0")}
-                  </p>
-                  <p className="display mt-3 text-[clamp(1.75rem,3.6vw,2.75rem)] leading-[0.95] text-fg">
-                    {area.title}
-                  </p>
-                </div>
-                <div className="lg:col-span-7 lg:col-start-6">
-                  <ul className="flex flex-wrap gap-x-6 gap-y-3">
-                    {area.items.map((item) => (
-                      <li key={item} className="label text-muted">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Lift>
-            ))}
-          </ul>
+          <div className="mt-[clamp(3rem,8vh,5.5rem)]">
+            <Disciplines areas={about.areas} />
+          </div>
         </div>
       </section>
 
