@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { Progression } from "@/components/about/progression";
+import { PathStory } from "@/components/about/path-story";
 import { PortraitPlate } from "@/components/about/portrait-plate";
 import { ArrowSequence } from "@/components/case/arrow-sequence";
 import { DrawLine, Lift, MaskReveal } from "@/components/motion/reveal";
@@ -20,10 +20,9 @@ import { about } from "@/data/about";
  *
  * - It opens dark. The hero at / already owns the cream opening; leading with
  *   the same one made this page read as a lesser version of it.
- * - The story is set as a spread — the first line pulled out at statement
- *   size, the rest in a proper measure beside it — instead of one column.
- * - The route in gets its own rail rather than borrowing the case studies'
- *   architecture diagram, which draws a data pipeline.
+ * - The story and the route are one scrolling chapter sequence: the prose
+ *   plays out on the right while a panel on the left fills in the route and
+ *   draws each place as the story reaches it.
  * - The three disciplines run as full-width rows rather than three columns of
  *   bullets, which is what made them read as a skills list.
  * - The toolkit is a ruled index; it was a row of bordered pills, the one
@@ -109,45 +108,11 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* === The path in + the route — light ============================= */}
+      {/* === The path in — light ======================================== */}
       <div data-surface="light" className="bg-bg">
-        <section className="relative">
-          <div className="shell py-[clamp(4rem,11vh,8rem)]">
-            <SectionLabel index="01">The path in</SectionLabel>
-
-            {/* A spread rather than a column: the opening line carries the
-                weight and the rest sits beside it at a readable measure. */}
-            <div className="mt-[clamp(2rem,5vh,3.5rem)] grid gap-x-[clamp(2rem,5vw,5rem)] gap-y-10 lg:grid-cols-12">
-              <div className="lg:col-span-6">
-                {/* One sentence, not the paragraph: a full paragraph set in
-                    heavy uppercase display is a wall, not an opening line. */}
-                <p className="display text-statement leading-[1.08] text-fg">
-                  <MaskReveal onView>{about.storyLead}</MaskReveal>
-                </p>
-              </div>
-
-              <Lift
-                onView
-                delay={0.12}
-                className="flex flex-col gap-6 lg:col-span-5 lg:col-start-8 lg:pt-2"
-              >
-                {about.story.map((paragraph) => (
-                  <p key={paragraph} className="text-lead text-muted">
-                    {paragraph}
-                  </p>
-                ))}
-              </Lift>
-            </div>
-          </div>
-        </section>
-
-        <section className="relative">
-          <DrawLine onView className="absolute inset-x-0 top-0" />
-          <div className="shell py-[clamp(4rem,11vh,8rem)]">
-            <SectionLabel index="02">The route</SectionLabel>
-            <div className="mt-[clamp(2.5rem,6vh,4rem)]">
-              <Progression stops={about.progression} />
-            </div>
+        <section className="relative overflow-x-clip">
+          <div className="shell py-[clamp(3rem,8vh,5rem)]">
+            <PathStory stops={about.path.stops} beats={about.path.beats} />
           </div>
         </section>
       </div>
@@ -200,7 +165,7 @@ export default function AboutPage() {
         <section className="relative overflow-x-clip">
           <div className="shell py-[clamp(4rem,11vh,8rem)]">
             <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
-              <SectionLabel index="03">The toolkit</SectionLabel>
+              <SectionLabel index="02">The toolkit</SectionLabel>
               <Lift onView as="p" className="label max-w-[44ch] text-faint">
                 {about.toolkitNote}
               </Lift>
@@ -232,7 +197,7 @@ export default function AboutPage() {
         <section className="relative">
           <DrawLine onView className="absolute inset-x-0 top-0" />
           <div className="shell py-[clamp(4rem,11vh,8rem)]">
-            <SectionLabel index="04">How I work</SectionLabel>
+            <SectionLabel index="03">How I work</SectionLabel>
 
             {/* The same arrow sequence the case studies use, so five steps read
                 as one movement instead of five separate headings. */}
@@ -261,7 +226,7 @@ export default function AboutPage() {
         <section className="relative">
           <DrawLine onView className="absolute inset-x-0 top-0" />
           <div className="shell py-[clamp(3rem,8vh,5rem)]">
-            <SectionLabel index="05">Outside the terminal</SectionLabel>
+            <SectionLabel index="04">Outside the terminal</SectionLabel>
             {/* Four faint words on one line read as a footnote. Given the page's
                 own type they read as part of the person. */}
             <ul className="mt-7 flex flex-wrap gap-x-[clamp(1.5rem,4vw,3.5rem)] gap-y-4">
