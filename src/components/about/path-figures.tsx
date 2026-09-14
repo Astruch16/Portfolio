@@ -172,7 +172,7 @@ function Sheet({ north }: { north: boolean }) {
   );
 }
 
-/* --- 01 · Earth science: a contour map ----------------------------------------
+/* --- 01 · Hydrogeology: a contour map -----------------------------------------
    Eight nested contours around a summit, every fourth one heavier as an index
    contour, with a stream cutting down across them the way water does. */
 

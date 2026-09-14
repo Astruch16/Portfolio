@@ -29,7 +29,6 @@ type Stop = { label: string; note: string };
 type Beat = {
   stops: readonly number[];
   figure: FigureKind;
-  lead: boolean;
   text: string;
 };
 
@@ -181,9 +180,11 @@ function Plate({
 }
 
 export function PathStory({
+  headline,
   stops,
   beats,
 }: {
+  headline: string;
   stops: readonly Stop[];
   beats: readonly Beat[];
 }) {
@@ -215,7 +216,20 @@ export function PathStory({
   const current = new Set(beats[active].stops);
 
   return (
-    <div ref={container} className="relative grid gap-x-[clamp(2rem,5vw,5rem)] lg:grid-cols-12">
+    <div
+      ref={container}
+      className="relative grid gap-x-[clamp(2rem,5vw,5rem)] lg:grid-cols-12"
+      // How far down the panel its figure starts: label line, the route's
+      // top margin, five 3.5rem stops, and the figure's top margin. The first
+      // chapter is pushed down by exactly this much so its kicker lands level
+      // with the top of the figure. Keep in step with mt-7 / h-14 / mt-9 below.
+      style={
+        {
+          "--figure-offset":
+            "calc(var(--text-2xs) * 1.1 + 1.75rem + 5 * 3.5rem + 2.25rem)",
+        } as React.CSSProperties
+      }
+    >
       {/* --- The panel that stays with the reader (wide only) ------------- */}
       <aside className="hidden min-w-0 lg:col-span-4 lg:block">
         <div className="sticky top-[calc(var(--nav-h)+2.25rem)] pb-10">
@@ -307,6 +321,20 @@ export function PathStory({
           The path in
         </p>
 
+        {/* The section's headline, level with the panel's label. Its block is
+            held to the panel's figure offset so the first chapter below starts
+            level with the first figure.
+
+            Observed as part of chapter one. It now fills the tracking band at
+            the top of the section, so without this, scrolling back up from
+            further down never passed a chapter and the panel stayed on the last
+            one read. */}
+        <div data-beat={0} className="mt-6 lg:mt-0 lg:min-h-[var(--figure-offset)]">
+          <h3 className="display text-[clamp(2rem,4.4vw,3.75rem)] leading-[0.98] text-fg">
+            {headline}
+          </h3>
+        </div>
+
         {beats.map((beat, i) => (
           <article
             key={i}
@@ -315,19 +343,19 @@ export function PathStory({
             className={cn(
               "flex flex-col justify-center py-[clamp(3rem,8vh,5rem)] transition-opacity duration-500 ease-[var(--ease-out-quart)] lg:min-h-[52vh]",
               "lg:data-[current=false]:opacity-30",
+              // The first chapter starts straight after the headline block, so
+              // its kicker sits level with the top of the panel's figure
+              // instead of floating down the middle of its own block.
+              "lg:first-of-type:justify-start lg:first-of-type:pt-0",
             )}
           >
             <Kicker beat={beat} stops={stops} />
 
-            {beat.lead ? (
-              <p className="display mt-6 text-[clamp(2rem,4.4vw,3.75rem)] leading-[0.98] text-fg">
-                {beat.text}
-              </p>
-            ) : (
-              <p className="mt-6 max-w-[34ch] text-[clamp(1.3rem,2vw,1.85rem)] leading-[1.42] tracking-[-0.01em] text-fg">
-                {beat.text}
-              </p>
-            )}
+            {/* Full column width, so every description runs to the same right
+                edge as the headline above rather than stopping short of it. */}
+            <p className="mt-6 text-[clamp(1.3rem,2vw,1.85rem)] leading-[1.42] tracking-[-0.01em] text-fg">
+              {beat.text}
+            </p>
 
             {/* Below lg there is no panel, so each chapter carries its own. */}
             <Plate
