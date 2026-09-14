@@ -1,4 +1,9 @@
+"use client";
+
+import { useSyncExternalStore } from "react";
+
 import { compileScript, frameAt, type Tone } from "@/data/terminal-script";
+import { sessionFrame, terminalSession } from "@/lib/terminal-session";
 import { cn } from "@/lib/utils";
 
 /**
@@ -8,7 +13,8 @@ import { cn } from "@/lib/utils";
  * means three.js is never downloaded in those cases. The terminal is the same
  * script the 3D scene runs, resolved to its finished state and rendered as real
  * text — so reduced-motion visitors get the outcome immediately, at native
- * sharpness, with no typing sequence.
+ * sharpness, with no typing sequence. Once a visitor uses the hero's prompt,
+ * it shows their session instead, exactly as the 3D laptop does.
  *
  * Perspective is declared inside each `transform` rather than on an ancestor;
  * the `perspective` property only reaches direct children and these layers are
@@ -23,9 +29,17 @@ const TONE_CLASS: Record<Tone, string> = {
   prompt: "text-[#8b79ff]",
 };
 
+const SETTLED = frameAt(compileScript(), Number.MAX_SAFE_INTEGER);
+
 export function HeroObjectStatic({ className }: { className?: string }) {
-  // Same source of truth as the 3D scene, wound forward to the end.
-  const frame = frameAt(compileScript(), Number.MAX_SAFE_INTEGER);
+  const session = useSyncExternalStore(
+    terminalSession.subscribe,
+    terminalSession.getSnapshot,
+    terminalSession.getServerSnapshot,
+  );
+  // Same source of truth as the 3D scene: the visitor's session once they've
+  // started one, the script wound forward to the end until then.
+  const frame = sessionFrame(session) ?? SETTLED;
 
   return (
     <div aria-hidden className={cn("relative isolate", className)}>
