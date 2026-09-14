@@ -31,6 +31,8 @@ type Beat = {
   figure: FigureKind;
   lead: boolean;
   text: string;
+  /** A paragraph under the lead line, for a chapter that opens with one. */
+  body?: string;
 };
 
 const ACCENT = "var(--color-accent)";
@@ -315,14 +317,25 @@ export function PathStory({
             className={cn(
               "flex flex-col justify-center py-[clamp(3rem,8vh,5rem)] transition-opacity duration-500 ease-[var(--ease-out-quart)] lg:min-h-[52vh]",
               "lg:data-[current=false]:opacity-30",
+              // The opening chapter starts at the top of the section, so its
+              // kicker sits on the same line as the panel's "The path in"
+              // label instead of floating down the middle of its block.
+              "lg:first-of-type:justify-start lg:first-of-type:pt-0",
             )}
           >
             <Kicker beat={beat} stops={stops} />
 
             {beat.lead ? (
-              <p className="display mt-6 text-[clamp(2rem,4.4vw,3.75rem)] leading-[0.98] text-fg">
-                {beat.text}
-              </p>
+              <>
+                <p className="display mt-6 text-[clamp(2rem,4.4vw,3.75rem)] leading-[0.98] text-fg">
+                  {beat.text}
+                </p>
+                {beat.body ? (
+                  <p className="mt-8 max-w-[34ch] text-[clamp(1.3rem,2vw,1.85rem)] leading-[1.42] tracking-[-0.01em] text-fg">
+                    {beat.body}
+                  </p>
+                ) : null}
+              </>
             ) : (
               <p className="mt-6 max-w-[34ch] text-[clamp(1.3rem,2vw,1.85rem)] leading-[1.42] tracking-[-0.01em] text-fg">
                 {beat.text}

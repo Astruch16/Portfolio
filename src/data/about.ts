@@ -19,12 +19,16 @@ export const about = {
    * `stops` are the five places on the rail. `beats` are the chapters the
    * reader scrolls through — each one is a whole sentence or paragraph of the
    * original story, unedited, tagged with the stops it covers and the drawing
-   * that goes with it. Nothing was written for this structure; the story was
-   * only divided where it already moves from one place to the next.
+   * that goes with it. The story was only divided where it already moves from
+   * one place to the next.
+   *
+   * One exception: the first chapter's `body` is DRAFT copy, written without
+   * specifics — it describes the field, not Adam's own work in it. Replace it
+   * with the real detail (what he did, where, for how long) before launch.
    */
   path: {
     stops: [
-      { label: "Earth science", note: "where I started" },
+      { label: "Hydrogeology", note: "where I started" },
       { label: "Real estate", note: "the problems I lived" },
       { label: "Internal tools", note: "solving my own" },
       { label: "Shipping products", note: "used by real people" },
@@ -36,6 +40,8 @@ export const about = {
         figure: "contours",
         lead: true,
         text: "I came into software from a completely different path.",
+        // DRAFT — see the note above.
+        body: "I started in hydrogeology: the study of how water moves underground, through systems you can never see directly. The work is reading patterns out of incomplete data, building a model of how something behaves, and testing it against what the ground actually does. That way of thinking came with me into everything I’ve built since.",
       },
       {
         stops: [1],
