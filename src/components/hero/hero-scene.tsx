@@ -18,6 +18,7 @@ import {
   createSurfaceNoise,
 } from "@/lib/surface-noise";
 import { createTerminalTexture } from "@/lib/terminal-texture";
+import { sessionFrame, terminalSession } from "@/lib/terminal-session";
 
 /**
  * The hero object: a laptop running a build, sitting on a floating plinth, with
@@ -151,25 +152,58 @@ const SPHERE_HOME = { x: 1.15, z: 1 } as const;
 const ROLL_DISTANCE = 0.22;
 const ROLL_PERIOD = 11;
 
+/** How a kick behaves: a spring pulling it home and gravity for the hop. */
+const KICK = { push: 1.75, hop: 2.5, stiffness: 18, damping: 3.4, gravity: 9, bounce: 0.36, reach: 0.4 };
+
 function GlossSphere() {
   const group = useRef<Group>(null);
   const mesh = useRef<Mesh>(null);
+  // The idle roll never stops; a kick is layered on top of it and springs back.
+  const kick = useRef({ x: 0, vx: 0, y: 0, vy: 0 });
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     if (!group.current || !mesh.current) return;
 
-    const offset =
+    const roll =
       Math.sin((clock.elapsedTime * Math.PI * 2) / ROLL_PERIOD) * ROLL_DISTANCE;
 
+    // Clamped step: a tab regaining focus would otherwise hand the spring one
+    // enormous delta and fire the sphere off the slab.
+    const dt = Math.min(delta, 1 / 30);
+    const k = kick.current;
+    k.vx += (-KICK.stiffness * k.x - KICK.damping * k.vx) * dt;
+    k.x = Math.min(KICK.reach, k.x + k.vx * dt);
+    k.vy -= KICK.gravity * dt;
+    k.y += k.vy * dt;
+    if (k.y < 0) {
+      k.y = 0;
+      k.vy = Math.abs(k.vy) > 0.4 ? -k.vy * KICK.bounce : 0;
+    }
+
+    const travel = roll + k.x;
     // Rolling without slipping: the roll angle is the distance travelled
     // divided by the radius, so the surface never skates across the stone.
-    group.current.position.x = SPHERE_HOME.x + offset;
-    mesh.current.rotation.z = -offset / SPHERE_RADIUS;
+    group.current.position.x = SPHERE_HOME.x + travel;
+    mesh.current.position.y = SPHERE_RADIUS + k.y;
+    mesh.current.rotation.z = -travel / SPHERE_RADIUS;
   });
 
   return (
     <group ref={group} position={[SPHERE_HOME.x, 0, SPHERE_HOME.z]}>
-      <mesh ref={mesh} position={[0, SPHERE_RADIUS, 0]} castShadow>
+      <mesh
+        ref={mesh}
+        position={[0, SPHERE_RADIUS, 0]}
+        castShadow
+        // A deliberate kick, never a pointer-follow: the set stays still until
+        // someone actually clicks it.
+        onClick={(event) => {
+          event.stopPropagation();
+          kick.current.vx += KICK.push;
+          if (kick.current.y === 0) kick.current.vy = KICK.hop;
+        }}
+        onPointerOver={() => (document.body.style.cursor = "pointer")}
+        onPointerOut={() => (document.body.style.cursor = "")}
+      >
         <sphereGeometry args={[SPHERE_RADIUS, 64, 64]} />
         <meshStandardMaterial color="#050505" metalness={1} roughness={0.06} />
       </mesh>
@@ -221,7 +255,14 @@ function FirstFrame({ onFirstFrame }: { onFirstFrame?: () => void }) {
 }
 
 function TerminalPlayback({ terminal }: { terminal: TerminalHandle }) {
-  useFrame(({ clock }) => terminal.update(clock.elapsedTime * 1000));
+  // Read straight from the session store every frame rather than through
+  // props, so typing never re-renders the scene.
+  useFrame(({ clock }) => {
+    const elapsed = clock.elapsedTime * 1000;
+    const frame = sessionFrame(terminalSession.getSnapshot());
+    if (frame) terminal.showFrame(frame, elapsed);
+    else terminal.update(elapsed);
+  });
   return null;
 }
 
@@ -247,9 +288,10 @@ export function HeroScene({
       gl={{ antialias: true, alpha: true, toneMapping: ACESFilmicToneMapping }}
       camera={{ position: [CAMERA.x, CAMERA.y, CAMERA.z], fov: 28 }}
       // Aimed once at creation. The set is deliberately fixed: nothing here
-      // tracks the pointer, so once it has settled it stays put.
+      // tracks the pointer, so once it has settled it stays put. It does take
+      // clicks — the laptop and the sphere both answer one.
       onCreated={({ camera }) => camera.lookAt(LOOK_AT.x, LOOK_AT.y, LOOK_AT.z)}
-      style={{ pointerEvents: "none" }}
+      style={{ pointerEvents: "auto" }}
     >
       <EnvironmentProbe />
       <TerminalPlayback terminal={terminal} />
@@ -292,7 +334,19 @@ export function HeroScene({
 
       <Plinth />
 
-      <group position={[-0.6, 0, 0.15]} rotation={[0, 0.12, 0]} scale={LAPTOP_SCALE}>
+      {/* Clicking the laptop hands the visitor its terminal. */}
+      <group
+        position={[-0.6, 0, 0.15]}
+        rotation={[0, 0.12, 0]}
+        scale={LAPTOP_SCALE}
+        onClick={(event) => {
+          event.stopPropagation();
+          terminalSession.activate();
+          terminalSession.requestFocus();
+        }}
+        onPointerOver={() => (document.body.style.cursor = "text")}
+        onPointerOut={() => (document.body.style.cursor = "")}
+      >
         <Laptop screenTexture={terminal.texture} />
       </group>
 

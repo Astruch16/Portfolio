@@ -9,7 +9,8 @@ import { HeroCaret } from "@/components/hero/hero-boot";
 import { HeroMeta } from "@/components/hero/hero-meta";
 import { StackRuntime } from "@/components/hero/stack-runtime";
 import { HeroVisual } from "@/components/hero/hero-visual";
-import { NameMosaic } from "@/components/hero/name-mosaic";
+import { HeroConsole } from "@/components/hero/hero-console";
+import { NameField } from "@/components/hero/name-field";
 import { TypeLine } from "@/components/hero/type-line";
 import { Lift } from "@/components/motion/reveal";
 import { nameMosaic } from "@/data/name-mosaic";
@@ -135,11 +136,15 @@ export function Hero() {
         {/* --- Name and role ------------------------------------------------
             One block. The role is the descriptor for the name, not a separate
             piece of furniture at the far end of the page. */}
-        <div className="relative z-10">
+        {/* Click-through: this column's blocks run the full width of the hero
+            and sit above the 3D set, so without it they swallow clicks meant
+            for the laptop and the sphere. Only the parts that take input opt
+            back in, each shrunk to its own content. */}
+        <div className="pointer-events-none relative z-10">
           <h1
             id="hero-name"
             // Negative indent optically aligns the "A" with the monogram above.
-            className="depth display -ml-[0.055em] text-display text-fg"
+            className="depth display pointer-events-auto -ml-[0.055em] w-fit text-display text-fg"
             style={{ "--depth": 3 } as React.CSSProperties}
           >
             <span className="sr-only">
@@ -147,20 +152,14 @@ export function Hero() {
             </span>
             <span aria-hidden>
               {mosaic ? (
-                <>
-                  <NameMosaic
-                    line={nameMosaic[0]}
-                    typed={reached(STEP.name)}
-                    enabled={booting}
-                    charMs={NAME_MS}
-                  />
-                  <NameMosaic
-                    line={nameMosaic[1]}
-                    typed={reached(STEP.surname)}
-                    enabled={booting}
-                    charMs={NAME_MS}
-                  />
-                </>
+                // A live field: the symbols assemble on the boot's cue, part
+                // around the pointer and scatter on a click.
+                <NameField
+                  lines={nameMosaic}
+                  typed={[reached(STEP.name), reached(STEP.surname)]}
+                  enabled={booting}
+                  charMs={NAME_MS}
+                />
               ) : (
                 <>
                   <TypeLine
@@ -208,9 +207,16 @@ export function Hero() {
               A thin technical strip hung directly off the role, so it reads as
               an annotation on the title rather than a separate widget. The
               panels it opens carry all the weight. */}
-          <div className="relative z-20 mt-[clamp(1rem,3vh,1.75rem)]">
+          <div className="pointer-events-auto relative z-20 mt-[clamp(1rem,3vh,1.75rem)] w-fit">
             <StackRuntime delay={t(2.25)} />
           </div>
+
+          {/* --- Console ------------------------------------------------------
+              Drives the laptop in the set. Arrives with the metadata, once the
+              boot has finished writing the page. */}
+          <Lift delay={t(cue.meta + 0.2)} className="pointer-events-auto relative z-20 mt-[clamp(1rem,2.6vh,1.5rem)] w-fit">
+            <HeroConsole />
+          </Lift>
         </div>
 
         {/* --- Statement -----------------------------------------------------

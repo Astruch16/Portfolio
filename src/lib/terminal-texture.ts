@@ -47,6 +47,8 @@ export type TerminalTexture = {
   texture: CanvasTexture;
   /** Advance to `elapsedMs`; pass `instant` to jump to the settled state. */
   update: (elapsedMs: number, instant?: boolean) => void;
+  /** Draw an arbitrary frame — the visitor's live session — instead of the script. */
+  showFrame: (frame: TerminalFrame, elapsedMs: number) => void;
   duration: number;
   dispose: () => void;
 };
@@ -165,9 +167,23 @@ export function createTerminalTexture(): TerminalTexture {
     texture.needsUpdate = true;
   }
 
+  function showFrame(frame: TerminalFrame, elapsedMs: number) {
+    const blinkOn = Math.floor(elapsedMs / BLINK_MS) % 2 === 0;
+    // Session content is not monotonic — it clears, and text is replaced —
+    // so the signature is the text itself. It's a few hundred characters.
+    const text = frame.lines.map((line) => line.map((s) => s.text).join("")).join("\n");
+    const next = `session|${text}|${frame.caretCol}|${blinkOn}`;
+    if (next === signature) return;
+
+    signature = next;
+    draw(frame, blinkOn);
+    texture.needsUpdate = true;
+  }
+
   return {
     texture,
     update,
+    showFrame,
     duration: compiled.duration,
     /**
      * Frees the GPU copy only. Deliberately leaves the handle usable: React
