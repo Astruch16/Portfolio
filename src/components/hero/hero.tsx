@@ -19,6 +19,7 @@ import { STEP, useBootSequence } from "@/hooks/use-boot-sequence";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { usePointerParallax } from "@/hooks/use-pointer-parallax";
 import { cue } from "@/lib/motion";
+import { sculpture } from "@/lib/sculpture-state";
 import { cn } from "@/lib/utils";
 
 /** Character cadences, slow enough to read as writing rather than a flicker. */
@@ -29,12 +30,13 @@ const STATEMENT_MS = 34;
 /** Distance the prompt keeps above the statement once it has travelled. */
 const CARET_LEAD = 44;
 
-type StatementLine = { text: string; step: number; accent?: boolean };
+type StatementLine = { text: string; step: number; form: 0 | 1 | 2; accent?: boolean };
 
+/** Each line of the statement is also one form of the sculpture beside it. */
 const STATEMENT: StatementLine[] = [
-  { text: "I design it", step: STEP.design },
-  { text: "I build it", step: STEP.build },
-  { text: "I ship it", step: STEP.ship, accent: true },
+  { text: "I design it", step: STEP.design, form: 0 },
+  { text: "I build it", step: STEP.build, form: 1 },
+  { text: "I ship it", step: STEP.ship, form: 2, accent: true },
 ];
 
 /**
@@ -57,6 +59,16 @@ export function Hero() {
   const booting = !still;
   const step = useBootSequence(booting);
   const reached = (target: number) => !booting || step >= target;
+
+  // The sculpture takes each form as its line of the statement is written.
+  useEffect(() => {
+    if (!booting) {
+      sculpture.suggest(2);
+      return;
+    }
+    const line = [...STATEMENT].reverse().find((l) => step >= l.step);
+    if (line) sculpture.suggest(line.form);
+  }, [booting, step]);
 
   // How far the prompt drops to reach the statement. Measured from layout
   // positions rather than bounding boxes, so the prompt's own transform never
@@ -138,7 +150,7 @@ export function Hero() {
             piece of furniture at the far end of the page. */}
         {/* Click-through: this column's blocks run the full width of the hero
             and sit above the 3D set, so without it they swallow clicks meant
-            for the laptop and the sphere. Only the parts that take input opt
+            for the sculpture. Only the parts that take input opt
             back in, each shrunk to its own content. */}
         <div className="pointer-events-none relative z-10">
           <h1
@@ -212,7 +224,8 @@ export function Hero() {
           </div>
 
           {/* --- Console ------------------------------------------------------
-              Drives the laptop in the set. Arrives with the metadata, once the
+              Its answers print on the sculpture, and design / build / ship
+              morph it. Arrives with the metadata, once the
               boot has finished writing the page. */}
           <Lift delay={t(cue.meta + 0.2)} className="pointer-events-auto relative z-20 mt-[clamp(1rem,2.6vh,1.5rem)] w-fit">
             <HeroConsole />
@@ -241,9 +254,11 @@ export function Hero() {
                   }}
                 />
               ) : null}
+              {/* Hovering a line holds the sculpture in that line's form. */}
               <p
+                onPointerEnter={() => sculpture.choose(line.form)}
                 className={cn(
-                  "text-statement font-bold tracking-[-0.03em] uppercase",
+                  "cursor-default text-statement font-bold tracking-[-0.03em] uppercase transition-opacity",
                   line.accent ? "text-accent" : "text-fg",
                 )}
               >
@@ -269,11 +284,14 @@ export function Hero() {
           <HeroMeta delay={t(cue.meta)} />
         </div>
 
-        {/* --- The set ------------------------------------------------------
-            Sits in the lower-right quadrant. Deliberately carries no `depth`
-            class: the set is fixed, and only the typography answers the
-            pointer. */}
-        <HeroVisual className="pointer-events-none -mr-(--gutter) mt-auto aspect-3/2 w-[calc(100%+var(--gutter))] pt-8 md:w-[74%] md:self-end lg:absolute lg:right-[2%] lg:bottom-[7%] lg:z-0 lg:mt-0 lg:aspect-4/3 lg:w-[64vw] lg:pt-0 xl:w-[min(66vw,64rem)]" />
+        {/* --- The sculpture -----------------------------------------------
+            Holds the lower-right quadrant. No `depth` class: it takes the
+            pointer itself — dragging, scattering — so it doesn't also drift
+            with the parallax. */}
+        <HeroVisual
+          cycling={step >= STEP.done || still}
+          className="mt-12 aspect-4/3 w-full md:w-[78%] md:self-end lg:absolute lg:right-(--gutter) lg:bottom-[5%] lg:z-0 lg:mt-0 lg:aspect-square lg:w-[min(44vw,42rem)]"
+        />
 
         {/* --- Scroll cue ---------------------------------------------------- */}
         <Lift

@@ -10,7 +10,7 @@ import { stackCategories, type SnippetTone, type StackCategory } from "@/data/st
  * A compact runtime strip sitting under the role.
  *
  * Three category triggers, each opening a terminal panel listing what is used
- * in that category with a one-line example. The panel borrows the laptop
+ * in that category with a one-line example. The panel borrows the old laptop
  * terminal's palette deliberately — same dark ground, same purple keywords and
  * lime values — so the two read as the same environment rather than two
  * unrelated widgets.

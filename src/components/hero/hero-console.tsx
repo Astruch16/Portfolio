@@ -6,21 +6,21 @@ import { useEffect, useRef, useSyncExternalStore } from "react";
 import { terminalSession } from "@/lib/terminal-session";
 
 /**
- * The prompt that drives the laptop.
+ * The hero's prompt.
  *
  * A real input, so it works with a keyboard, a screen reader and a phone's
- * on-screen keyboard; the laptop in the scene is only its display. What's typed
- * shows on the laptop as it's typed, and Enter runs it there.
+ * on-screen keyboard. Answers print as a short log on the sculpture, and
+ * design / build / ship morph it into that form.
  *
  * `/` focuses it from anywhere on the page (except while typing in another
- * field), and so does clicking the laptop. The quick commands underneath are
- * for anyone who would rather not type — each one runs exactly as if typed.
+ * field). The quick commands underneath are for anyone who would rather not
+ * type — each one runs exactly as if typed.
  *
  * Commands that go somewhere print where they're going first, and navigate a
- * beat later, so the visitor sees the laptop answer before the page changes.
+ * beat later, so the visitor sees the answer before the page changes.
  */
 
-const QUICK = ["help", "work", "stack", "about", "contact"] as const;
+const QUICK = ["help", "work", "ship", "about", "contact"] as const;
 const NAVIGATE_AFTER_MS = 700;
 
 export function HeroConsole() {
@@ -33,7 +33,7 @@ export function HeroConsole() {
   const router = useRouter();
   const pending = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // Focus requests come from outside — the laptop in the scene.
+  // Focus requests can come from outside the prompt.
   useEffect(() => {
     if (session.focusTick > 0) input.current?.focus({ preventScroll: true });
   }, [session.focusTick]);
@@ -112,7 +112,7 @@ export function HeroConsole() {
         ))}
       </div>
 
-      {/* The laptop is a picture; this is what a screen reader hears. */}
+      {/* The log on the sculpture is decorative; this is what a screen reader hears. */}
       <p aria-live="polite" className="sr-only">
         {session.announcement}
       </p>
