@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 
 import { Disciplines } from "@/components/about/disciplines";
 import { PathStory } from "@/components/about/path-story";
-import { PortraitPlate } from "@/components/about/portrait-plate";
+import { AboutHero } from "@/components/about/about-hero";
 import { ArrowSequence } from "@/components/case/arrow-sequence";
 import { DrawLine, Lift, MaskReveal } from "@/components/motion/reveal";
 import { about } from "@/data/about";
@@ -54,61 +54,7 @@ function SectionLabel({ index, children }: { index: string; children: React.Reac
 export default function AboutPage() {
   return (
     <main>
-      {/* === Opening — dark ============================================== */}
-      {/* `text-fg` belongs on the section, not on `main`: the token resolves
-          against whichever surface the element sits in, and inheriting a colour
-          computed under the light surface would paint the headline black on
-          black. */}
-      <section
-        data-surface="dark"
-        className="relative isolate overflow-x-clip bg-bg text-fg"
-      >
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(to right, rgb(255 255 255 / 0.02) 1px, transparent 1px), linear-gradient(to bottom, rgb(255 255 255 / 0.02) 1px, transparent 1px)",
-              backgroundSize: "clamp(64px, 7vw, 104px) clamp(64px, 7vw, 104px)",
-              maskImage:
-                "radial-gradient(ellipse 90% 60% at 40% 0%, #000 30%, transparent 100%)",
-            }}
-          />
-          <div
-            className="absolute -top-[10%] right-[6%] h-[34rem] w-[34rem] rounded-full opacity-40 blur-[120px]"
-            style={{
-              background:
-                "radial-gradient(circle, rgb(114 87 255 / 0.32) 0%, transparent 70%)",
-            }}
-          />
-        </div>
-
-        <div className="shell shell-grid items-end gap-y-[clamp(3rem,7vh,4.5rem)] pt-[calc(var(--nav-h)+clamp(3rem,9vh,6rem))] pb-[clamp(3.5rem,10vh,7rem)]">
-          <div className="col-span-12 lg:col-span-7">
-            <SectionLabel index="03">{about.eyebrow}</SectionLabel>
-
-            <h1 className="display mt-[clamp(1.5rem,4vh,2.5rem)] text-[clamp(2.75rem,7.6vw,6rem)] leading-[0.9] text-fg">
-              {about.headline.map((line, i) => (
-                <MaskReveal key={line} delay={0.06 + i * 0.08}>
-                  {line}
-                </MaskReveal>
-              ))}
-            </h1>
-
-            <Lift delay={0.24} className="mt-[clamp(1.5rem,4vh,2.5rem)] max-w-[38ch]">
-              <p className="text-lead text-muted">{about.lead}</p>
-            </Lift>
-          </div>
-
-          {/* Held back to five columns and hung off the baseline, so the plate
-              counterweights the headline instead of competing with it. */}
-          {/* Capped rather than filling its columns: at full width the plate
-              stood taller than the headline block and opened a void above it. */}
-          <Lift delay={0.18} className="col-span-12 sm:col-span-7 lg:col-span-4 lg:col-start-9">
-            <PortraitPlate className="max-w-[20rem] sm:ml-auto" />
-          </Lift>
-        </div>
-      </section>
+      <AboutHero />
 
       {/* === The path in — light ======================================== */}
       <div data-surface="light" className="bg-bg">
