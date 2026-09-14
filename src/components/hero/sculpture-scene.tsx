@@ -10,9 +10,9 @@ import { sculpture } from "@/lib/sculpture-state";
 /**
  * The hero sculpture: a few thousand particles holding one of three forms.
  *
- * Every particle carries its position in all three forms as attributes, and a
- * single shader blends between them by three weights the CPU eases toward the
- * form being asked for. While the weights are mixed, particles lift off along
+ * Every particle carries its position in all six forms as attributes, and a
+ * single shader blends between them by six weights the CPU eases toward the
+ * form being asked for — two vec3 uniforms, since WebGL has no vec6. While the weights are mixed, particles lift off along
  * their own direction and settle back, so a morph reads as the sculpture coming
  * apart and reassembling rather than as one outline sliding into another.
  *
@@ -32,10 +32,14 @@ const vertex = /* glsl */ `
   attribute vec3 aForm0;
   attribute vec3 aForm1;
   attribute vec3 aForm2;
+  attribute vec3 aForm3;
+  attribute vec3 aForm4;
+  attribute vec3 aForm5;
   attribute vec4 aSeed;
   attribute float aAccent;
 
-  uniform vec3 uWeights;
+  uniform vec3 uWeightsA;
+  uniform vec3 uWeightsB;
   uniform float uTime;
   uniform float uBurst;
   uniform vec2 uPointer;
@@ -49,10 +53,14 @@ const vertex = /* glsl */ `
   varying float vTouch;
 
   void main() {
-    vec3 p = aForm0 * uWeights.x + aForm1 * uWeights.y + aForm2 * uWeights.z;
+    vec3 p = aForm0 * uWeightsA.x + aForm1 * uWeightsA.y + aForm2 * uWeightsA.z
+           + aForm3 * uWeightsB.x + aForm4 * uWeightsB.y + aForm5 * uWeightsB.z;
 
     // Mid-morph lift: zero when one form holds, strongest halfway between two.
-    float settled = max(max(uWeights.x, uWeights.y), uWeights.z);
+    float settled = max(
+      max(max(uWeightsA.x, uWeightsA.y), uWeightsA.z),
+      max(max(uWeightsB.x, uWeightsB.y), uWeightsB.z)
+    );
     float lift = (1.0 - settled) * 1.6;
     p += aSeed.xyz * lift * (0.35 + aSeed.w * 0.65);
 
@@ -130,7 +138,7 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
   const { gl, size } = useThree();
 
   const attributes = useMemo(() => {
-    const [a, b, c] = buildForms(COUNT);
+    const forms = buildForms(COUNT);
     const seed = new Float32Array(COUNT * 4);
     const accent = new Float32Array(COUNT);
     for (let i = 0; i < COUNT; i += 1) {
@@ -141,12 +149,13 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
       seed.set([s * Math.cos(t), u, s * Math.sin(t), hash(i * 3.73)], i * 4);
       accent[i] = hash(i * 5.19) < ACCENT_SHARE ? 1 : 0;
     }
-    return { a, b, c, seed, accent };
+    return { forms, seed, accent };
   }, []);
 
   const uniforms = useMemo(
     () => ({
-      uWeights: { value: [1, 0, 0] as [number, number, number] },
+      uWeightsA: { value: [1, 0, 0] as [number, number, number] },
+      uWeightsB: { value: [0, 0, 0] as [number, number, number] },
       uTime: { value: 0 },
       uBurst: { value: 1.6 },
       uPointer: { value: [9, 9] as [number, number] },
@@ -161,7 +170,7 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
     [],
   );
 
-  const weights = useRef<[number, number, number]>([1, 0, 0]);
+  const weights = useRef<number[]>([1, 0, 0, 0, 0, 0]);
   const burst = useRef({ value: 1.6, seen: sculpture.getSnapshot().burst });
   const frames = useRef(0);
 
@@ -177,7 +186,7 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
     // Ease each weight toward the requested form.
     const w = weights.current;
     const ease = 1 - Math.exp(-dt * 2.6);
-    for (let k = 0; k < 3; k += 1) {
+    for (let k = 0; k < w.length; k += 1) {
       w[k] += ((k === state.form ? 1 : 0) - w[k]) * ease;
     }
 
@@ -203,7 +212,8 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
     g.rotation.x = 0.26 + Math.sin(t * 0.17) * 0.06 + spin.pitch;
 
     const u = m.uniforms;
-    u.uWeights.value = w;
+    u.uWeightsA.value = [w[0], w[1], w[2]];
+    u.uWeightsB.value = [w[3], w[4], w[5]];
     u.uTime.value = t;
     u.uBurst.value = burst.current.value;
     u.uPointer.value = [it.pointer.x, it.pointer.y];
@@ -225,10 +235,10 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
       <points frustumCulled={false}>
         <bufferGeometry>
           {/* `position` is required by three for bounds; the shader ignores it. */}
-          <bufferAttribute attach="attributes-position" args={[attributes.c, 3]} />
-          <bufferAttribute attach="attributes-aForm0" args={[attributes.a, 3]} />
-          <bufferAttribute attach="attributes-aForm1" args={[attributes.b, 3]} />
-          <bufferAttribute attach="attributes-aForm2" args={[attributes.c, 3]} />
+          <bufferAttribute attach="attributes-position" args={[attributes.forms[0], 3]} />
+          {attributes.forms.map((form, i) => (
+            <bufferAttribute key={i} attach={`attributes-aForm${i}`} args={[form, 3]} />
+          ))}
           <bufferAttribute attach="attributes-aSeed" args={[attributes.seed, 4]} />
           <bufferAttribute attach="attributes-aAccent" args={[attributes.accent, 1]} />
         </bufferGeometry>

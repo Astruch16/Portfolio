@@ -1,14 +1,18 @@
 /**
  * The three forms the hero sculpture morphs between, as point clouds.
  *
- * One per line of the statement beside it:
+ * The first three are the lines of the statement beside it; the rest carry the
+ * cycle on once the statement has been written:
  *
- *   0 · DESIGN — an artboard, exploded: frame, header, sidebar and cards on
- *                separate planes, a pen path drawn across them
- *   1 · BUILD  — a system in layers: three slabs with their grids, the
- *                columns between them and blocks sitting on the top one
- *   2 · SHIP   — a globe: lines of latitude and longitude, routes arcing
- *                between points on its surface, an orbit around it
+ *   0 · DESIGN  — an artboard, exploded: frame, header, sidebar and cards on
+ *                 separate planes, a pen path drawn across them
+ *   1 · BUILD   — a system in layers: three slabs with their grids, the
+ *                 columns between them and blocks sitting on the top one
+ *   2 · SHIP    — a globe: lines of latitude and longitude, routes arcing
+ *                 between points on its surface, an orbit around it
+ *   3 · CODE    — `</>`, extruded, in front of the faint lines of a file
+ *   4 · DATA    — a wave surface, measured: a mesh with markers standing on it
+ *   5 · ITERATE — a trefoil knot, three strands wide: a loop with no end
  *
  * Every form is described as polylines and then sampled evenly by length, so
  * any form can be expressed at any particle count and the density along a line
@@ -20,8 +24,8 @@
  * fallback both read these, and draw the same sculpture every visit.
  */
 
-export const FORMS = ["Design", "Build", "Ship"] as const;
-export type FormIndex = 0 | 1 | 2;
+export const FORMS = ["Design", "Build", "Ship", "Code", "Data", "Iterate"] as const;
+export type FormIndex = 0 | 1 | 2 | 3 | 4 | 5;
 
 type Vec3 = [number, number, number];
 type Path = Vec3[];
@@ -175,6 +179,115 @@ function ship(): Path[] {
   return paths;
 }
 
+/**
+ * Turns a flat form to face the viewer when the sculpture is at rest.
+ *
+ * The sculpture sits at a three-quarter angle (pitch 0.26, yaw -0.5), which
+ * suits the forms with real depth and ruins the nearly flat ones: `</>` stops
+ * reading as a glyph and the knot as a loop. This applies the inverse of that
+ * resting turn, so they meet the eye square-on and still turn when dragged.
+ */
+function facing(paths: Path[]): Path[] {
+  const [cp, sp] = [Math.cos(-0.26), Math.sin(-0.26)];
+  const [cy, sy] = [Math.cos(0.5), Math.sin(0.5)];
+  return paths.map((path) =>
+    path.map(([x, y, z]) => {
+      const y1 = y * cp - z * sp;
+      const z1 = y * sp + z * cp;
+      return [x * cy + z1 * sy, y1, -x * sy + z1 * cy] as Vec3;
+    }),
+  );
+}
+
+/* --- 3 · Code --------------------------------------------------------------- */
+
+function code(): Path[] {
+  const paths: Path[] = [];
+  const DEPTH = 0.09;
+
+  // One stroke of a glyph, drawn as a solid bar: its outline front and back
+  // and the four edges joining them.
+  const bar = (a: [number, number], b: [number, number], t = 0.24) => {
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const len = Math.hypot(dx, dy);
+    const nx = (-dy / len) * (t / 2);
+    const ny = (dx / len) * (t / 2);
+    const corners: [number, number][] = [
+      [a[0] + nx, a[1] + ny],
+      [b[0] + nx, b[1] + ny],
+      [b[0] - nx, b[1] - ny],
+      [a[0] - nx, a[1] - ny],
+    ];
+    for (const z of [DEPTH, -DEPTH]) {
+      paths.push([...corners, corners[0]].map(([x, y]) => [x, y, z] as Vec3));
+    }
+    for (const [x, y] of corners) paths.push(line([x, y, DEPTH], [x, y, -DEPTH]));
+  };
+
+  bar([-0.5, 0.66], [-1.34, 0]);
+  bar([-1.34, 0], [-0.5, -0.66]);
+  bar([0.5, 0.66], [1.34, 0]);
+  bar([1.34, 0], [0.5, -0.66]);
+  bar([0.3, 0.9], [-0.3, -0.9]);
+
+  // The file behind it.
+  const rows: [number, number][] = [[1.02, 0.7], [0.8, 1.2], [-0.8, 1.4], [-1.02, 0.8]];
+  for (const [y, w] of rows) {
+    const indent = hash(y * 10) < 0.5 ? 0 : 0.25;
+    paths.push(line([-1.45 + indent, y, -0.42], [-1.45 + indent + w, y, -0.42]));
+  }
+  return facing(paths);
+}
+
+/* --- 4 · Data --------------------------------------------------------------- */
+
+function data(): Path[] {
+  const paths: Path[] = [];
+  const height = (x: number, z: number) =>
+    0.3 * Math.sin(1.7 * x + 0.6) * Math.cos(1.8 * z) + 0.16 * Math.sin(2.9 * x - 1.4 * z) - 0.18;
+  const X = 1.45;
+  const Z = 1.0;
+
+  for (let r = 0; r <= 9; r += 1) {
+    const z = -Z + (2 * Z * r) / 9;
+    paths.push(Array.from({ length: 49 }, (_, i) => {
+      const x = -X + (2 * X * i) / 48;
+      return [x, height(x, z), z] as Vec3;
+    }));
+  }
+  for (let c = 0; c <= 13; c += 1) {
+    const x = -X + (2 * X * c) / 13;
+    paths.push(Array.from({ length: 33 }, (_, i) => {
+      const z = -Z + (2 * Z * i) / 32;
+      return [x, height(x, z), z] as Vec3;
+    }));
+  }
+
+  // Markers standing on the surface, each with a reading ring at the top.
+  for (const [x, z] of [[-0.9, -0.3], [-0.2, 0.45], [0.55, -0.55], [1.05, 0.3]] as const) {
+    const y0 = height(x, z);
+    const y1 = y0 + 0.5 + hash(x + z) * 0.3;
+    paths.push(line([x, y0, z], [x, y1, z]));
+    paths.push(circle(x, y1 + 0.09, 0.09, z, 20));
+  }
+  return paths;
+}
+
+/* --- 5 · Iterate ------------------------------------------------------------ */
+
+function iterate(): Path[] {
+  const paths: Path[] = [];
+  const knot = (t: number, offset: number): Vec3 => {
+    const r = 0.78 + 0.34 * Math.cos(3 * t) + offset;
+    return [r * Math.cos(2 * t), r * Math.sin(2 * t) - 0.02, 0.5 * Math.sin(3 * t) + offset * 0.8];
+  };
+  for (const offset of [-0.07, 0, 0.07]) {
+    paths.push(Array.from({ length: 241 }, (_, i) => knot((i / 240) * Math.PI * 2, offset)));
+  }
+  return facing(paths);
+}
+
 /* --- Sampling --------------------------------------------------------------- */
 
 function sample(paths: Path[], count: number, salt: number): Float32Array {
@@ -216,7 +329,7 @@ function sample(paths: Path[], count: number, salt: number): Float32Array {
   return shuffled;
 }
 
-/** All three forms at `count` particles each, in FORMS order. */
-export function buildForms(count: number): [Float32Array, Float32Array, Float32Array] {
-  return [sample(design(), count, 11), sample(build(), count, 23), sample(ship(), count, 37)];
+/** Every form at `count` particles each, in FORMS order. */
+export function buildForms(count: number): Float32Array[] {
+  return [design, build, ship, code, data, iterate].map((form, i) => sample(form(), count, 11 + i * 13));
 }

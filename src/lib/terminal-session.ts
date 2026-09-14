@@ -11,8 +11,8 @@ export type Segment = { text: string; tone?: Tone };
  * The hero's live terminal session.
  *
  * The prompt under the hero's stack strip. Its answers print as a short log on
- * the sculpture beside it, and three of its commands — design, build, ship —
- * morph the sculpture into that form.
+ * the sculpture beside it, and a command per form — design, build, ship,
+ * code, data, iterate — morphs the sculpture into it.
  *
  * Every answer is read from the site's own data — projects, the stack, site
  * details — so the terminal can never say anything the rest of the site
@@ -43,6 +43,9 @@ export const COMMANDS = [
   { name: "design", hint: "morph the sculpture" },
   { name: "build", hint: "morph the sculpture" },
   { name: "ship", hint: "morph the sculpture" },
+  { name: "code", hint: "morph the sculpture" },
+  { name: "data", hint: "morph the sculpture" },
+  { name: "iterate", hint: "morph the sculpture" },
   { name: "work", hint: "the projects" },
   { name: "open", hint: "open <project>" },
   { name: "stack", hint: "what I build with" },
@@ -148,7 +151,10 @@ function answer(raw: string): { lines: Segment[][]; navigate?: string; clear?: b
 
     case "design":
     case "build":
-    case "ship": {
+    case "ship":
+    case "code":
+    case "data":
+    case "iterate": {
       const form = FORMS.findIndex((f) => f.toLowerCase() === command) as FormIndex;
       sculpture.choose(form);
       return { lines: [[accent("→ "), { text: `morphing to ${command}` }]] };

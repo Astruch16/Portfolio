@@ -21,8 +21,9 @@ import { cn } from "@/lib/utils";
  * during a quiet moment of the boot and the set only fades in once the renderer
  * has really drawn a frame, so it never pops in over an empty box.
  *
- * Under the canvas, in the site's drawing language: tabs naming the form being
- * held and choosing another, a hint for what the pointer does, and — once a
+ * Under the canvas, in the site's drawing language: tabs for the six forms —
+ * the one being held written out, the rest as numbers so all six and the hint
+ * fit on one line — a hint for what the pointer does, and — once a
  * visitor has used the prompt — the last lines of their session. Nothing sits
  * above it: the identity module owns that corner of the hero.
  */
@@ -99,12 +100,12 @@ export function HeroVisual({ className, cycling }: { className?: string; cycling
     return () => observer.disconnect();
   }, []);
 
-  // Once the boot has walked through the three forms, keep moving through them
-  // — `suggest` stands aside for a while whenever the visitor has chosen one.
+  // Once the boot has walked the statement's three forms, carry on through all
+  // six — `suggest` stands aside for a while whenever the visitor has chosen one.
   useEffect(() => {
     if (!cycling || still) return;
     const timer = setInterval(() => {
-      sculpture.suggest(((sculpture.getSnapshot().form + 1) % 3) as FormIndex);
+      sculpture.suggest(((sculpture.getSnapshot().form + 1) % FORMS.length) as FormIndex);
     }, CYCLE_MS);
     return () => clearInterval(timer);
   }, [cycling, still]);
@@ -155,7 +156,7 @@ export function HeroVisual({ className, cycling }: { className?: string; cycling
       <div
         role="tablist"
         aria-label="Sculpture form"
-        className="absolute right-0 bottom-0 left-0 flex items-center gap-1 border-t border-hairline pt-2"
+        className="absolute right-0 bottom-0 left-0 flex items-center gap-0.5 border-t border-hairline pt-2"
       >
         {FORMS.map((name, i) => {
           const on = i === form;
@@ -165,16 +166,20 @@ export function HeroVisual({ className, cycling }: { className?: string; cycling
               type="button"
               role="tab"
               aria-selected={on}
+              title={name}
               onClick={() => sculpture.choose(i as FormIndex)}
               className={cn(
-                "group/tab relative shrink-0 px-2.5 py-1.5 font-mono text-[0.6875rem] tracking-[0.14em] uppercase transition-colors",
+                "group/tab relative shrink-0 px-2 py-1.5 font-mono text-[0.6875rem] tracking-[0.14em] uppercase transition-colors",
                 on ? "text-fg" : "text-faint hover:text-muted",
               )}
             >
-              <span className={on ? "text-accent" : undefined}>{pad(i)}</span> {name}
+              <span className={on ? "text-accent" : undefined}>{pad(i)}</span>
+              {/* The held form is written out; the rest stay numbers, named for
+                  screen readers and on hover. */}
+              <span className={on ? "ml-1.5" : "sr-only"}>{name}</span>
               <span
                 aria-hidden
-                className="absolute inset-x-2.5 -bottom-px block h-px origin-left bg-accent transition-transform duration-500 ease-[var(--ease-out-expo)]"
+                className="absolute inset-x-2 -bottom-px block h-px origin-left bg-accent transition-transform duration-500 ease-[var(--ease-out-expo)]"
                 style={{ transform: `scaleX(${on ? 1 : 0})` }}
               />
             </button>
