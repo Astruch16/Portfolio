@@ -176,21 +176,49 @@ function Sheet({ north }: { north: boolean }) {
    Eight nested contours around a summit, every fourth one heavier as an index
    contour, with a stream cutting down across them the way water does. */
 
-const CONTOURS = Array.from({ length: 8 }, (_, ring) => {
-  const base = 16 + ring * 16;
-  const points = Array.from({ length: 96 }, (_, step) => {
-    const theta = (step / 96) * Math.PI * 2;
-    const wobble =
-      1 +
-      0.15 * Math.sin(3 * theta + ring * 0.5) +
-      0.06 * Math.sin(5 * theta + 1.3 + ring * 0.25) +
-      0.03 * Math.sin(9 * theta + ring);
-    const x = 200 + Math.cos(theta) * base * wobble * 1.14;
-    const y = 138 + Math.sin(theta) * base * wobble * 0.76;
-    return `${x.toFixed(1)} ${y.toFixed(1)}`;
+/**
+ * Nested closed contours around a summit, from fixed sine terms rather than
+ * noise so the server and the client draw the same terrain. Shared with the
+ * about page's opening, which lays a much larger field of the same ground
+ * behind its headline.
+ */
+export function contourRings({
+  rings,
+  base,
+  step,
+  cx,
+  cy,
+  sx,
+  sy,
+  samples = 96,
+}: {
+  rings: number;
+  base: number;
+  step: number;
+  cx: number;
+  cy: number;
+  sx: number;
+  sy: number;
+  samples?: number;
+}): string[] {
+  return Array.from({ length: rings }, (_, ring) => {
+    const radius = base + ring * step;
+    const points = Array.from({ length: samples }, (_, k) => {
+      const theta = (k / samples) * Math.PI * 2;
+      const wobble =
+        1 +
+        0.15 * Math.sin(3 * theta + ring * 0.5) +
+        0.06 * Math.sin(5 * theta + 1.3 + ring * 0.25) +
+        0.03 * Math.sin(9 * theta + ring);
+      const x = cx + Math.cos(theta) * radius * wobble * sx;
+      const y = cy + Math.sin(theta) * radius * wobble * sy;
+      return `${x.toFixed(1)} ${y.toFixed(1)}`;
+    });
+    return `M ${points.join(" L ")} Z`;
   });
-  return `M ${points.join(" L ")} Z`;
-});
+}
+
+const CONTOURS = contourRings({ rings: 8, base: 16, step: 16, cx: 200, cy: 138, sx: 1.14, sy: 0.76 });
 
 function Contours({ tone }: { tone: string }) {
   return (

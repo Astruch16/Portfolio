@@ -341,6 +341,7 @@ export function PathStory({
         {beats.map((beat, i) => (
           <article
             key={i}
+            id={`path-chapter-${i}`}
             data-beat={i}
             data-current={i === active}
             className={cn(
