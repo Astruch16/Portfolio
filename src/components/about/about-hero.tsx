@@ -3,8 +3,7 @@
 import { ArrowDown } from "lucide-react";
 import { motion } from "motion/react";
 
-import { contourRings } from "@/components/about/path-figures";
-import { PortraitPlate } from "@/components/about/portrait-plate";
+import { SymbolTopography } from "@/components/about/symbol-topography";
 import { sequenceToneLight } from "@/components/case/sequence-tones";
 import { StatusDot } from "@/components/layout/status-dot";
 import { Lift, MaskReveal } from "@/components/motion/reveal";
@@ -20,12 +19,13 @@ import { easing } from "@/lib/motion";
  * couldn't get from the nav. Here the opening sets up the story before the
  * scroll starts:
  *
- * - The ground under it is a contour map drawing itself in — the same terrain
- *   as the first figure below, because the story starts in hydrogeology.
+ * - The ground under it is a topographic map across the whole opening, its
+ *   contour lines set in tiny code symbols — the story starts in
+ *   hydrogeology and ends in software, and the map is both at once.
  * - A row of readouts gives the facts the site already states: where, what,
  *   and whether he's available.
  * - The headline is the page's largest type, with a note pointing to where the
- *   story actually began.
+ *   story actually began. There is deliberately no portrait.
  * - The whole route runs along the bottom, drawing in stop by stop, and each
  *   stop jumps to its chapter.
  *
@@ -34,62 +34,6 @@ import { easing } from "@/lib/motion";
 
 const ACCENT = "var(--color-accent)";
 const pad = (i: number) => String(i + 1).padStart(2, "0");
-
-/** A very large field of the first figure's terrain, summit behind the portrait. */
-const GROUND = contourRings({ rings: 15, base: 34, step: 36, cx: 1180, cy: 470, sx: 1.4, sy: 0.84, samples: 140 });
-
-function Ground() {
-  return (
-    <motion.svg
-      aria-hidden
-      viewBox="0 0 1600 900"
-      preserveAspectRatio="xMidYMid slice"
-      className="absolute inset-0 h-full w-full text-fg"
-      initial="hidden"
-      animate="visible"
-      style={{
-        maskImage: "radial-gradient(ellipse 75% 85% at 70% 50%, #000 25%, transparent 88%)",
-      }}
-    >
-      {GROUND.map((d, i) => (
-        <motion.path
-          key={i}
-          d={d}
-          fill="none"
-          stroke="currentColor"
-          strokeOpacity={i % 5 === 4 ? 0.14 : 0.065}
-          strokeWidth={i % 5 === 4 ? 1.4 : 1}
-          vectorEffect="non-scaling-stroke"
-          variants={{
-            hidden: { pathLength: 0, opacity: 0 },
-            visible: {
-              pathLength: 1,
-              opacity: 1,
-              transition: {
-                pathLength: { duration: 2.4, ease: easing.outQuart, delay: 0.15 + i * 0.07 },
-                opacity: { duration: 0.4, delay: 0.15 + i * 0.07 },
-              },
-            },
-          }}
-        />
-      ))}
-      {/* The stream, off the flank toward the headline. Fades rather than
-          draws, so its dashes survive. */}
-      <motion.path
-        d="M 1120 520 C 1020 600, 900 620, 780 700 S 520 820, 240 880"
-        fill="none"
-        stroke="currentColor"
-        strokeOpacity="0.12"
-        strokeDasharray="10 8"
-        vectorEffect="non-scaling-stroke"
-        variants={{
-          hidden: { opacity: 0 },
-          visible: { opacity: 1, transition: { duration: 1.2, delay: 1.4 } },
-        }}
-      />
-    </motion.svg>
-  );
-}
 
 /** Scrolls to a chapter of the story, centred so the sticky nav never covers it. */
 function goToChapter(event: React.MouseEvent<HTMLAnchorElement>, chapter: number) {
@@ -117,18 +61,23 @@ export function AboutHero() {
     >
       {/* --- Ground ------------------------------------------------------- */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        {/* Eased off under the nav and the readout rail at the top, and under
+            the route at the bottom, so the small type in those bands stays
+            easy to read. Full strength behind the headline, which can take it. */}
+        {/* Dimmer on narrow screens: the opening stacks into a tall column there,
+            so far more of the small type sits over the map at once. */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 opacity-40 lg:opacity-100"
           style={{
-            backgroundImage:
-              "linear-gradient(to right, rgb(255 255 255 / 0.022) 1px, transparent 1px), linear-gradient(to bottom, rgb(255 255 255 / 0.022) 1px, transparent 1px)",
-            backgroundSize: "clamp(64px, 7vw, 104px) clamp(64px, 7vw, 104px)",
+            maskImage:
+              "linear-gradient(to bottom, rgb(0 0 0 / 0.22) 0%, rgb(0 0 0 / 0.5) 20%, #000 36%, #000 64%, rgb(0 0 0 / 0.42) 100%)",
           }}
-        />
-        <Ground />
+        >
+          <SymbolTopography />
+        </div>
         <div
-          className="absolute top-[18%] right-[4%] h-[38rem] w-[38rem] rounded-full opacity-50 blur-[130px]"
-          style={{ background: "radial-gradient(circle, rgb(114 87 255 / 0.34) 0%, transparent 70%)" }}
+          className="absolute top-[18%] right-[4%] h-[38rem] w-[38rem] rounded-full opacity-45 blur-[130px]"
+          style={{ background: "radial-gradient(circle, rgb(114 87 255 / 0.3) 0%, transparent 70%)" }}
         />
       </div>
 
@@ -163,9 +112,9 @@ export function AboutHero() {
           </dl>
         </div>
 
-        {/* --- Headline and portrait ------------------------------------- */}
-        <div className="grid flex-1 items-center gap-x-[clamp(2rem,5vw,5rem)] gap-y-12 py-[clamp(1.5rem,4vh,3.5rem)] lg:grid-cols-12">
-          <div className="lg:col-span-8">
+        {/* --- Headline ------------------------------------------------ */}
+        <div className="flex flex-1 items-center py-[clamp(2rem,6vh,4.5rem)]">
+          <div>
             <h1 className="display text-[clamp(3rem,8.2vw,7.75rem)] leading-[0.86] text-fg">
               {about.headline.map((line, i) => (
                 <MaskReveal key={line} delay={0.12 + i * 0.1}>
@@ -201,9 +150,6 @@ export function AboutHero() {
             </div>
           </div>
 
-          <Lift delay={0.22} className="lg:col-span-4">
-            <PortraitPlate className="mx-auto max-w-[18.5rem] lg:mr-0 lg:ml-auto" />
-          </Lift>
         </div>
 
         {/* --- The route ------------------------------------------------- */}
