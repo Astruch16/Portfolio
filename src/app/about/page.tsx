@@ -114,7 +114,7 @@ export default function AboutPage() {
       <div data-surface="light" className="bg-bg">
         <section className="relative overflow-x-clip">
           <div className="shell py-[clamp(3rem,8vh,5rem)]">
-            <PathStory stops={about.path.stops} beats={about.path.beats} />
+            <PathStory headline={about.path.headline} stops={about.path.stops} beats={about.path.beats} />
           </div>
         </section>
       </div>
