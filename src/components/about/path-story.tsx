@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { FIGURE_META, PathFigure, type FigureKind } from "@/components/about/path-figures";
+import { PathMoments, type Moment } from "@/components/about/path-moments";
 import { sequenceToneLight } from "@/components/case/sequence-tones";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,8 @@ type Beat = {
   stops: readonly number[];
   figure: FigureKind;
   text: string;
+  /** What happened at this stop, played out by scroll under the paragraph. */
+  moments?: readonly Moment[];
 };
 
 const ACCENT = "var(--color-accent)";
@@ -356,6 +359,14 @@ export function PathStory({
             <p className="mt-6 text-[clamp(1.3rem,2vw,1.85rem)] leading-[1.42] tracking-[-0.01em] text-fg">
               {beat.text}
             </p>
+
+            {beat.moments?.length ? (
+              <PathMoments
+                moments={beat.moments}
+                tone={sequenceToneLight(beat.stops[beat.stops.length - 1], ACCENT)}
+                className="mt-[clamp(2.5rem,6vh,4rem)]"
+              />
+            ) : null}
 
             {/* Below lg there is no panel, so each chapter carries its own. */}
             <Plate
