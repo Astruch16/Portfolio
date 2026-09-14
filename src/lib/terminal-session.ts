@@ -1,31 +1,34 @@
 import { projects } from "@/data/projects";
 import { site } from "@/data/site";
 import { stackCategories } from "@/data/stack";
-import { TERMINAL_ROWS, type Segment, type TerminalFrame } from "@/data/terminal-script";
+import { FORMS, type FormIndex } from "@/lib/sculpture-forms";
+import { sculpture } from "@/lib/sculpture-state";
+
+export type Tone = "text" | "muted" | "accent" | "success" | "prompt";
+export type Segment = { text: string; tone?: Tone };
 
 /**
  * The hero's live terminal session.
  *
- * Until a visitor touches the prompt, the laptop plays its scripted build. The
- * moment they focus it or type, the screen becomes theirs: what they type is
- * echoed on the laptop as they type it, and a command prints its answer there.
+ * The prompt under the hero's stack strip. Its answers print as a short log on
+ * the sculpture beside it, and three of its commands — design, build, ship —
+ * morph the sculpture into that form.
  *
  * Every answer is read from the site's own data — projects, the stack, site
  * details — so the terminal can never say anything the rest of the site
  * doesn't. Commands that go somewhere say so, then hand back a route for the
  * caller to navigate to.
  *
- * A tiny external store rather than React state: the 3D scene reads it inside
- * its render loop without re-rendering, while the prompt and the static
- * fallback subscribe with `useSyncExternalStore`.
+ * A tiny external store rather than React state, shared by the prompt and the
+ * log without either owning it.
  */
 
 type SessionState = {
-  /** False until the visitor first touches the prompt; the script plays until then. */
+  /** False until the visitor first touches the prompt. */
   live: boolean;
   history: Segment[][];
   input: string;
-  /** Bumped to ask the prompt to take focus — e.g. when the laptop is clicked. */
+  /** Bumped to ask the prompt to take focus. */
   focusTick: number;
   /** Plain text of the last answer, for the screen-reader log. */
   announcement: string;
@@ -33,11 +36,13 @@ type SessionState = {
 
 const PROMPT: Segment = { text: "$ ", tone: "prompt" };
 const MAX_INPUT = 40;
-/** One row is kept for the prompt line itself. */
-const HISTORY_ROWS = TERMINAL_ROWS - 1;
+const HISTORY_ROWS = 40;
 
 export const COMMANDS = [
   { name: "help", hint: "list commands" },
+  { name: "design", hint: "morph the sculpture" },
+  { name: "build", hint: "morph the sculpture" },
+  { name: "ship", hint: "morph the sculpture" },
   { name: "work", hint: "the projects" },
   { name: "open", hint: "open <project>" },
   { name: "stack", hint: "what I build with" },
@@ -141,6 +146,14 @@ function answer(raw: string): { lines: Segment[][]; navigate?: string; clear?: b
         navigate: "/contact",
       };
 
+    case "design":
+    case "build":
+    case "ship": {
+      const form = FORMS.findIndex((f) => f.toLowerCase() === command) as FormIndex;
+      sculpture.choose(form);
+      return { lines: [[accent("→ "), { text: `morphing to ${command}` }]] };
+    }
+
     case "clear":
       return { lines: [], clear: true };
 
@@ -199,16 +212,3 @@ export const terminalSession = {
     return result.navigate;
   },
 };
-
-/** What the laptop should show for this session, or null to keep the script. */
-export function sessionFrame(session: SessionState): TerminalFrame | null {
-  if (!session.live) return null;
-
-  const lines = [...session.history, [PROMPT, { text: session.input }]].slice(-TERMINAL_ROWS);
-  return {
-    lines,
-    caretRow: lines.length - 1,
-    caretCol: PROMPT.text.length + session.input.length,
-    finished: true,
-  };
-}
