@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Color, NormalBlending, type Group, type ShaderMaterial } from "three";
 
 import { buildForms, hash } from "@/lib/sculpture-forms";
@@ -264,6 +264,12 @@ export function SculptureScene({
   onFirstFrame?: () => void;
 }) {
   const wrapper = useRef<HTMLDivElement>(null);
+  // Bumped whenever the WebGL context is lost, which remounts the canvas with
+  // a fresh one. Browsers drop contexts on a GPU reset, when too many are open,
+  // or when a phone backgrounds the tab — and a hot reload in development does
+  // it every time. Left alone, the canvas stays on the page and never draws
+  // again until a full reload.
+  const [generation, setGeneration] = useState(0);
 
   useEffect(() => {
     const el = wrapper.current;
@@ -327,6 +333,17 @@ export function SculptureScene({
       aria-hidden
     >
       <Canvas
+        key={generation}
+        onCreated={({ gl }) => {
+          gl.domElement.addEventListener(
+            "webglcontextlost",
+            (event) => {
+              event.preventDefault();
+              setGeneration((g) => g + 1);
+            },
+            { once: true },
+          );
+        }}
         frameloop={active ? "always" : "never"}
         dpr={[1, 1.75]}
         gl={{ antialias: false, alpha: true }}
