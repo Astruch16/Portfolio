@@ -49,14 +49,39 @@ const TONE: Record<Tone, string> = {
 
 const pad = (i: number) => String(i + 1).padStart(2, "0");
 
+/**
+ * Fitting the forms into the room they actually have.
+ *
+ * The box is a fixed 4:3 anchored to the rule, so how much of it is free
+ * depends on the screen: on a short one the identity module reaches well down
+ * into it, on a tall one barely at all. One fixed placement left the forms
+ * pressed against the module at 1280 and sitting on the rule at 1920. Instead,
+ * the space between the module and the caption is measured, and the forms are
+ * scaled to fit it and centred in it.
+ *
+ * The extents are the tallest top and lowest bottom across all six forms, in
+ * scene units at scale 1, measured from renders — so every form fits, not just
+ * the one on screen.
+ */
+const FORMS_TOP = 1.12;
+const FORMS_BOTTOM = -1.25;
+/** Scene units visible top to bottom at the origin: 2 · 5.1 · tan(19°). */
+const VIEW_UNITS = 3.51;
+/** Px kept clear under the module, and above the caption's label. */
+const CLEAR_TOP = 34;
+const CLEAR_BOTTOM = 84;
+
 export function HeroVisual({
   className,
   style,
   cycling,
+  ceiling,
 }: {
   className?: string;
   style?: React.CSSProperties;
   cycling: boolean;
+  /** Where the identity module ends, in the same coordinates as this box's offsetTop. */
+  ceiling?: number | null;
 }) {
   const wide = useMediaQuery("(min-width: 1024px)");
   const still = useMediaQuery("(prefers-reduced-motion: reduce)");
@@ -74,6 +99,7 @@ export function HeroVisual({
   const [drawn, setDrawn] = useState(false);
   const [floorPassed, setFloorPassed] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
+  const [box, setBox] = useState({ top: 0, height: 0 });
 
   const use3D = wide && !still;
 
@@ -106,6 +132,29 @@ export function HeroVisual({
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const el = container.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => setBox({ top: el.offsetTop, height: el.clientHeight }));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ceiling]);
+
+  const placement = (() => {
+    // Off to the right where the name reaches in under the box's left side;
+    // centred when the box has a row of its own.
+    const shift = ceiling == null ? 0 : 0.42;
+    if (!box.height) return { fit: 1, lift: -0.12, shift };
+    const unit = box.height / VIEW_UNITS;
+    const top = Math.max(0, (ceiling ?? box.top) - box.top) + CLEAR_TOP;
+    const bottom = box.height - CLEAR_BOTTOM;
+    const fit = Math.max(0.6, Math.min(1, (bottom - top) / ((FORMS_TOP - FORMS_BOTTOM) * unit)));
+    // Scene y is up from the box's centre; put the forms' middle on the room's.
+    const middle = (top + bottom) / 2;
+    const lift = (box.height / 2 - middle) / unit - ((FORMS_TOP + FORMS_BOTTOM) / 2) * fit;
+    return { fit, lift, shift };
+  })();
+
   // Once the boot is done, the cycle moves on whenever the held form's dwell is
   // up — the same numbers the statement's rail draws its bar from.
   useEffect(() => {
@@ -136,9 +185,9 @@ export function HeroVisual({
 
       <div className="absolute inset-0">
         {use3D ? (
-          mounted ? <SculptureScene active={inView} onFirstFrame={onFirstFrame} /> : null
+          mounted ? <SculptureScene active={inView} {...placement} onFirstFrame={onFirstFrame} /> : null
         ) : (
-          <SculptureStatic />
+          <SculptureStatic {...placement} />
         )}
       </div>
 

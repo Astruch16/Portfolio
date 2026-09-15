@@ -132,7 +132,17 @@ const interaction: Interaction = {
   spin: { yaw: 0, pitch: 0, vYaw: 0, vPitch: 0 },
 };
 
-function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
+function Particles({
+  fit,
+  lift,
+  shift,
+  onFirstFrame,
+}: {
+  fit: number;
+  lift: number;
+  shift: number;
+  onFirstFrame?: () => void;
+}) {
   const group = useRef<Group>(null);
   const material = useRef<ShaderMaterial>(null);
   const { gl, size } = useThree();
@@ -196,8 +206,9 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
     }
     burst.current.value *= Math.exp(-dt * 2.2);
 
-    // Turning: a slow idle sway, plus whatever the visitor put into it,
-    // bleeding off and drifting back toward rest.
+    // Turning: square-on at rest, with a slow idle sway just wide enough to
+    // show the depth, plus whatever the visitor put into it, bleeding off and
+    // drifting back toward rest.
     const spin = it.spin;
     if (!it.drag.active) {
       spin.yaw += spin.vYaw * dt;
@@ -208,8 +219,8 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
     }
     spin.pitch = Math.max(-0.7, Math.min(0.7, spin.pitch));
     const t = clock.elapsedTime;
-    g.rotation.y = -0.5 + Math.sin(t * 0.22) * 0.38 + spin.yaw;
-    g.rotation.x = 0.26 + Math.sin(t * 0.17) * 0.06 + spin.pitch;
+    g.rotation.y = Math.sin(t * 0.22) * 0.2 + spin.yaw;
+    g.rotation.x = Math.sin(t * 0.17) * 0.04 + spin.pitch;
 
     const u = m.uniforms;
     u.uWeightsA.value = [w[0], w[1], w[2]];
@@ -232,11 +243,11 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
   });
 
   return (
-    // Offset rather than centred. The box reaches up under the identity module
-    // and left under the name, so the forms sit low and right within it. On
-    // the forms, not the camera: R3F aims its camera at the origin, so moving
-    // the camera only changes the angle.
-    <group position={[0.3, -0.3, 0]}>
+    // Offset rather than centred. The box reaches left under the name, so the
+    // forms sit right within it, and up under the identity module, so the
+    // visual fits them to the room below it. On the forms, not the camera: R3F
+    // aims its camera at the origin, so moving the camera only changes the angle.
+    <group position={[shift, lift, 0]} scale={fit}>
       <group ref={group}>
         <points frustumCulled={false}>
           <bufferGeometry>
@@ -278,9 +289,18 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
 
 export function SculptureScene({
   active,
+  fit = 1,
+  lift = -0.12,
+  shift = 0.42,
   onFirstFrame,
 }: {
   active: boolean;
+  /** Scale for the forms, below 1 where the box has less room than usual. */
+  fit?: number;
+  /** Vertical offset of the forms, in scene units. */
+  lift?: number;
+  /** Horizontal offset of the forms, in scene units. */
+  shift?: number;
   onFirstFrame?: () => void;
 }) {
   const wrapper = useRef<HTMLDivElement>(null);
@@ -373,9 +393,14 @@ export function SculptureScene({
         frameloop={active ? "always" : "never"}
         dpr={[1, 1.75]}
         gl={{ antialias: false, alpha: true }}
-        camera={{ position: [0, 0.3, 5.1], fov: 38 }}
+        camera={{ position: [0, 0, 5.1], fov: 38 }}
       >
-        <Particles onFirstFrame={onFirstFrame} />
+        <Particles
+          fit={fit}
+          lift={lift}
+          shift={shift}
+          onFirstFrame={onFirstFrame}
+        />
       </Canvas>
     </div>
   );

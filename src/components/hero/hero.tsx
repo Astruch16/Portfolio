@@ -79,6 +79,10 @@ export function Hero() {
   // not derived: when the left column runs tall the statement is pushed below
   // where its margin alone would put it.
   const [railOffset, setRailOffset] = useState<number | null>(null);
+  // Where the identity module ends: the ceiling the sculpture's forms stand
+  // under, since its box reaches up behind the module.
+  const metaRef = useRef<HTMLDivElement>(null);
+  const [ceiling, setCeiling] = useState<number | null>(null);
 
   useEffect(() => {
     const measure = () => {
@@ -90,6 +94,8 @@ export function Hero() {
       const parent = statement.offsetParent as HTMLElement | null;
       if (parent) {
         setRailOffset(parent.clientHeight - (statement.offsetTop + statement.offsetHeight));
+        const meta = metaRef.current;
+        if (meta) setCeiling(meta.offsetTop + meta.offsetHeight);
       }
     };
 
@@ -266,6 +272,7 @@ export function Hero() {
             on wide screens so it can sit against the right gutter without
             taking part in the left column's vertical rhythm. */}
         <div
+          ref={metaRef}
           className="depth relative z-10 mt-10 lg:absolute lg:top-[calc(var(--nav-h)+clamp(1.25rem,4vh,3rem))] lg:right-(--gutter) lg:mt-0 lg:w-[17rem]"
           style={{ "--depth": 4 } as React.CSSProperties}
         >
@@ -279,6 +286,7 @@ export function Hero() {
         <HeroVisual
           cycling={step >= STEP.done || still}
           style={pinned && railOffset != null ? { bottom: railOffset } : undefined}
+          ceiling={pinned ? ceiling : null}
           // Its bottom rule sits on the same line as the rail under the statement.
           // The calc is the first-paint value; the measured offset takes over.
           className="mt-12 aspect-4/3 w-full md:w-[78%] md:self-end lg:absolute lg:right-(--gutter) lg:bottom-[calc(3rem+clamp(4.75rem,11vh,7rem))] lg:z-0 lg:mt-0 lg:w-[min(50vw,48rem)]"
