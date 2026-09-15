@@ -1,8 +1,8 @@
 /**
  * The three forms the hero sculpture morphs between, as point clouds.
  *
- * The first three are the lines of the statement beside it; the rest carry the
- * cycle on once the statement has been written:
+ * Each is also the verb of the statement beside it — I design it, I build it,
+ * I ship it, I code it, I measure it, I iterate it — so the names are verbs:
  *
  *   0 · DESIGN  — an artboard, exploded: frame, header, sidebar and cards on
  *                 separate planes, a pen path drawn across them
@@ -11,7 +11,7 @@
  *   2 · SHIP    — a globe: lines of latitude and longitude, routes arcing
  *                 between points on its surface, an orbit around it
  *   3 · CODE    — `</>`, extruded, in front of the faint lines of a file
- *   4 · DATA    — a wave surface, measured: a mesh with markers standing on it
+ *   4 · MEASURE — a wave surface, measured: a mesh with markers standing on it
  *   5 · ITERATE — a trefoil knot, three strands wide: a loop with no end
  *
  * Every form is described as polylines and then sampled evenly by length, so
@@ -24,7 +24,7 @@
  * fallback both read these, and draw the same sculpture every visit.
  */
 
-export const FORMS = ["Design", "Build", "Ship", "Code", "Data", "Iterate"] as const;
+export const FORMS = ["Design", "Build", "Ship", "Code", "Measure", "Iterate"] as const;
 export type FormIndex = 0 | 1 | 2 | 3 | 4 | 5;
 
 type Vec3 = [number, number, number];
@@ -116,7 +116,7 @@ function build(): Path[] {
     paths.push(line([x, -0.72, z], [x, 0.72, z]));
   }
   // Blocks standing on the top layer.
-  for (const [x, z, h] of [[-0.6, -0.2, 0.34], [0.05, 0.25, 0.52], [0.62, -0.18, 0.24]] as const) {
+  for (const [x, z, h] of [[-0.6, -0.2, 0.3], [0.05, 0.25, 0.42], [0.62, -0.18, 0.22]] as const) {
     const s = 0.24;
     const y0 = 0.72;
     const y1 = 0.72 + h;
@@ -127,7 +127,7 @@ function build(): Path[] {
       paths.push(line([x + dx, y0, z + dz], [x + dx, y1, z + dz]));
     }
   }
-  return paths.map((p) => p.map(([x, y, z]) => [x, y - 0.14, z] as Vec3));
+  return tilt(paths.map((p) => p.map(([x, y, z]) => [x, y - 0.26, z] as Vec3)), 0.3);
 }
 
 /* --- 2 · Ship --------------------------------------------------------------- */
@@ -180,23 +180,16 @@ function ship(): Path[] {
 }
 
 /**
- * Turns a flat form to face the viewer when the sculpture is at rest.
+ * Leans a form back so its top faces the viewer a little.
  *
- * The sculpture sits at a three-quarter angle (pitch 0.26, yaw -0.5), which
- * suits the forms with real depth and ruins the nearly flat ones: `</>` stops
- * reading as a glyph and the knot as a loop. This applies the inverse of that
- * resting turn, so they meet the eye square-on and still turn when dragged.
+ * The sculpture rests square-on to the viewer. That suits the upright forms and
+ * flattens the level ones: seen dead level, the slabs of Build and the surface
+ * of Measure collapse into a few horizontal lines. Tilting just those two
+ * toward the eye keeps them front-on while still showing what's on top.
  */
-function facing(paths: Path[]): Path[] {
-  const [cp, sp] = [Math.cos(-0.26), Math.sin(-0.26)];
-  const [cy, sy] = [Math.cos(0.5), Math.sin(0.5)];
-  return paths.map((path) =>
-    path.map(([x, y, z]) => {
-      const y1 = y * cp - z * sp;
-      const z1 = y * sp + z * cp;
-      return [x * cy + z1 * sy, y1, -x * sy + z1 * cy] as Vec3;
-    }),
-  );
+function tilt(paths: Path[], angle: number): Path[] {
+  const [c, s] = [Math.cos(angle), Math.sin(angle)];
+  return paths.map((path) => path.map(([x, y, z]) => [x, y * c - z * s, y * s + z * c] as Vec3));
 }
 
 /* --- 3 · Code --------------------------------------------------------------- */
@@ -237,7 +230,7 @@ function code(): Path[] {
     const indent = hash(y * 10) < 0.5 ? 0 : 0.25;
     paths.push(line([-1.45 + indent, y, -0.42], [-1.45 + indent + w, y, -0.42]));
   }
-  return facing(paths);
+  return paths;
 }
 
 /* --- 4 · Data --------------------------------------------------------------- */
@@ -245,7 +238,7 @@ function code(): Path[] {
 function data(): Path[] {
   const paths: Path[] = [];
   const height = (x: number, z: number) =>
-    0.3 * Math.sin(1.7 * x + 0.6) * Math.cos(1.8 * z) + 0.16 * Math.sin(2.9 * x - 1.4 * z) - 0.18;
+    0.3 * Math.sin(1.7 * x + 0.6) * Math.cos(1.8 * z) + 0.16 * Math.sin(2.9 * x - 1.4 * z) - 0.3;
   const X = 1.45;
   const Z = 1.0;
 
@@ -271,7 +264,7 @@ function data(): Path[] {
     paths.push(line([x, y0, z], [x, y1, z]));
     paths.push(circle(x, y1 + 0.09, 0.09, z, 20));
   }
-  return paths;
+  return tilt(paths, 0.36);
 }
 
 /* --- 5 · Iterate ------------------------------------------------------------ */
@@ -285,7 +278,7 @@ function iterate(): Path[] {
   for (const offset of [-0.07, 0, 0.07]) {
     paths.push(Array.from({ length: 241 }, (_, i) => knot((i / 240) * Math.PI * 2, offset)));
   }
-  return facing(paths);
+  return paths;
 }
 
 /* --- Sampling --------------------------------------------------------------- */

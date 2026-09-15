@@ -682,3 +682,13 @@
     display: none;
   }
 }
+
+/* Hero statement: the held form's bar fills over exactly how long it holds. */
+@keyframes statement-dwell {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

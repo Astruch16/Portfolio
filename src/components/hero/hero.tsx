@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { HeroBackdrop } from "@/components/hero/hero-backdrop";
 import { HeroCaret } from "@/components/hero/hero-boot";
 import { HeroMeta } from "@/components/hero/hero-meta";
+import { HeroStatement } from "@/components/hero/hero-statement";
 import { StackRuntime } from "@/components/hero/stack-runtime";
 import { HeroVisual } from "@/components/hero/hero-visual";
 import { HeroConsole } from "@/components/hero/hero-console";
@@ -20,23 +21,19 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { usePointerParallax } from "@/hooks/use-pointer-parallax";
 import { cue } from "@/lib/motion";
 import { sculpture } from "@/lib/sculpture-state";
-import { cn } from "@/lib/utils";
 
 /** Character cadences, slow enough to read as writing rather than a flicker. */
 const NAME_MS = 60;
 const ROLE_MS = 16;
-const STATEMENT_MS = 34;
 
 /** Distance the prompt keeps above the statement once it has travelled. */
 const CARET_LEAD = 44;
 
-type StatementLine = { text: string; step: number; form: 0 | 1 | 2; accent?: boolean };
-
-/** Each line of the statement is also one form of the sculpture beside it. */
-const STATEMENT: StatementLine[] = [
-  { text: "I design it", step: STEP.design, form: 0 },
-  { text: "I build it", step: STEP.build, form: 1 },
-  { text: "I ship it", step: STEP.ship, form: 2, accent: true },
+/** The boot writes the statement through its first three verbs. */
+const BOOT_FORMS: { step: number; form: 0 | 1 | 2 }[] = [
+  { step: STEP.design, form: 0 },
+  { step: STEP.build, form: 1 },
+  { step: STEP.ship, form: 2 },
 ];
 
 /**
@@ -60,14 +57,15 @@ export function Hero() {
   const step = useBootSequence(booting);
   const reached = (target: number) => !booting || step >= target;
 
-  // The sculpture takes each form as its line of the statement is written.
+  // The statement and the sculpture walk design → build → ship as the boot
+  // writes them; the idle cycle carries on through the rest afterwards.
   useEffect(() => {
     if (!booting) {
       sculpture.suggest(2);
       return;
     }
-    const line = [...STATEMENT].reverse().find((l) => step >= l.step);
-    if (line) sculpture.suggest(line.form);
+    const beat = [...BOOT_FORMS].reverse().find((b) => step >= b.step);
+    if (beat) sculpture.suggest(beat.form);
   }, [booting, step]);
 
   // How far the prompt drops to reach the statement. Measured from layout
@@ -76,6 +74,15 @@ export function Hero() {
   const caretRef = useRef<HTMLParagraphElement>(null);
   const statementRef = useRef<HTMLDivElement>(null);
   const [travelY, setTravelY] = useState(0);
+  // Distance from the bottom of the hero to the bottom of the statement's
+  // rail, so the sculpture's rule can sit on exactly the same line. Measured,
+  // not derived: when the left column runs tall the statement is pushed below
+  // where its margin alone would put it.
+  const [railOffset, setRailOffset] = useState<number | null>(null);
+  // Where the identity module ends: the ceiling the sculpture's forms stand
+  // under, since its box reaches up behind the module.
+  const metaRef = useRef<HTMLDivElement>(null);
+  const [ceiling, setCeiling] = useState<number | null>(null);
 
   useEffect(() => {
     const measure = () => {
@@ -84,11 +91,25 @@ export function Hero() {
       if (!caret || !statement) return;
 
       setTravelY(statement.offsetTop - caret.offsetTop - CARET_LEAD);
+      const parent = statement.offsetParent as HTMLElement | null;
+      if (parent) {
+        setRailOffset(parent.clientHeight - (statement.offsetTop + statement.offsetHeight));
+        const meta = metaRef.current;
+        if (meta) setCeiling(meta.offsetTop + meta.offsetHeight);
+      }
     };
 
     measure();
+    // Fonts landing and the name assembling both change heights without a
+    // window resize.
+    const observer = new ResizeObserver(measure);
+    if (statementRef.current) observer.observe(statementRef.current);
+    if (statementRef.current?.offsetParent) observer.observe(statementRef.current.offsetParent);
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
   }, [pinned]);
 
   // The hero is pinned on wide screens and the next section rides over it, so
@@ -233,51 +254,25 @@ export function Hero() {
         </div>
 
         {/* --- Statement -----------------------------------------------------
-            Three beats joined by a spine. Gaps and connectors are fixed, so the
-            rhythm stays even however the type scales. */}
-        <div
+            One live line, I [verb] it, whose verb is the form the sculpture is
+            holding — and the rail of every form beneath it, which is also the
+            control. Kept clear of the scroll cue below it. */}
+        <HeroStatement
           ref={statementRef}
-          // `w-fit` shrinks the block to its widest line; `items-center` then
-          // centres every line and the spine on that same axis, so the stack
-          // reads as one column while the block itself stays on the gutter.
-          className="relative z-10 mt-12 flex w-fit flex-col items-center gap-[clamp(0.4rem,0.9vh,0.7rem)] lg:mt-auto lg:mb-[clamp(1.5rem,5vh,4.5rem)]"
-        >
-          {STATEMENT.map((line, index) => (
-            <div key={line.text} className="contents">
-              {index > 0 ? (
-                <span
-                  aria-hidden
-                  className="block w-px origin-top bg-hairline-strong transition-transform duration-500 ease-[var(--ease-out-expo)]"
-                  style={{
-                    height: "clamp(1rem, 2.2vh, 1.75rem)",
-                    transform: reached(line.step) ? "scaleY(1)" : "scaleY(0)",
-                  }}
-                />
-              ) : null}
-              {/* Hovering a line holds the sculpture in that line's form. */}
-              <p
-                onPointerEnter={() => sculpture.choose(line.form)}
-                className={cn(
-                  "cursor-default text-statement font-bold tracking-[-0.03em] uppercase transition-opacity",
-                  line.accent ? "text-accent" : "text-fg",
-                )}
-              >
-                <TypeLine
-                  text={line.text}
-                  typed={reached(line.step)}
-                  enabled={booting}
-                  charMs={STATEMENT_MS}
-                />
-              </p>
-            </div>
-          ))}
-        </div>
+          visible={reached(STEP.design)}
+          railVisible={reached(STEP.done)}
+          animate={!still}
+          // Keep this margin in step with the sculpture's bottom offset below —
+          // the two rules line up across the hero.
+          className="relative z-10 mt-12 w-fit lg:mt-auto lg:mb-[clamp(4.75rem,11vh,7rem)]"
+        />
 
         {/* --- Identity module ---------------------------------------------
             Counterweights the name across the top of the composition. Absolute
             on wide screens so it can sit against the right gutter without
             taking part in the left column's vertical rhythm. */}
         <div
+          ref={metaRef}
           className="depth relative z-10 mt-10 lg:absolute lg:top-[calc(var(--nav-h)+clamp(1.25rem,4vh,3rem))] lg:right-(--gutter) lg:mt-0 lg:w-[17rem]"
           style={{ "--depth": 4 } as React.CSSProperties}
         >
@@ -290,7 +285,11 @@ export function Hero() {
             with the parallax. */}
         <HeroVisual
           cycling={step >= STEP.done || still}
-          className="mt-12 aspect-4/3 w-full md:w-[78%] md:self-end lg:absolute lg:right-(--gutter) lg:bottom-[5%] lg:z-0 lg:mt-0 lg:aspect-square lg:w-[min(44vw,42rem)]"
+          style={pinned && railOffset != null ? { bottom: railOffset } : undefined}
+          ceiling={pinned ? ceiling : null}
+          // Its bottom rule sits on the same line as the rail under the statement.
+          // The calc is the first-paint value; the measured offset takes over.
+          className="mt-12 aspect-4/3 w-full md:w-[78%] md:self-end lg:absolute lg:right-(--gutter) lg:bottom-[calc(3rem+clamp(4.75rem,11vh,7rem))] lg:z-0 lg:mt-0 lg:w-[min(50vw,48rem)]"
         />
 
         {/* --- Scroll cue ---------------------------------------------------- */}
