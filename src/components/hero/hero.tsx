@@ -19,6 +19,7 @@ import { STEP, useBootSequence } from "@/hooks/use-boot-sequence";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { usePointerParallax } from "@/hooks/use-pointer-parallax";
 import { cue } from "@/lib/motion";
+import { type FormIndex } from "@/lib/sculpture-forms";
 import { sculpture } from "@/lib/sculpture-state";
 
 /** Character cadences, slow enough to read as writing rather than a flicker. */
@@ -34,6 +35,15 @@ const BOOT_FORMS: { step: number; form: 0 | 1 | 2 }[] = [
   { step: STEP.build, form: 1 },
   { step: STEP.ship, form: 2 },
 ];
+
+/**
+ * Having written the first three, the boot runs on through the rest and comes
+ * back to the first, at the pace it was writing at. Otherwise the opening
+ * shows three of the six forms and the idle cycle then starts wherever the
+ * boot happened to stop, halfway along the rail.
+ */
+const SWEEP: FormIndex[] = [3, 4, 5, 0];
+const SWEEP_MS = 460;
 
 /**
  * A diagonal composition: the name anchors the upper left with the role hung
@@ -57,7 +67,7 @@ export function Hero() {
   const reached = (target: number) => !booting || step >= target;
 
   // The statement and the sculpture walk design → build → ship as the boot
-  // writes them; the idle cycle carries on through the rest afterwards.
+  // writes them.
   useEffect(() => {
     if (!booting) {
       sculpture.suggest(2);
@@ -65,6 +75,20 @@ export function Hero() {
     }
     const beat = [...BOOT_FORMS].reverse().find((b) => step >= b.step);
     if (beat) sculpture.suggest(beat.form);
+  }, [booting, step]);
+
+  // Then straight on through the remaining three and back to the first, which
+  // is where the idle cycle takes over. Each step only suggests, so a visitor
+  // who reaches for the rail mid-sweep keeps what they picked.
+  useEffect(() => {
+    if (!booting || step < STEP.done) return;
+    let i = 0;
+    const timer = setInterval(() => {
+      sculpture.suggest(SWEEP[i]);
+      i += 1;
+      if (i === SWEEP.length) clearInterval(timer);
+    }, SWEEP_MS);
+    return () => clearInterval(timer);
   }, [booting, step]);
 
   // How far the prompt drops to reach the statement. Measured from layout
