@@ -9,7 +9,6 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { cue, easing } from "@/lib/motion";
 import { FORMS } from "@/lib/sculpture-forms";
 import { sculpture } from "@/lib/sculpture-state";
-import { terminalSession, type Tone } from "@/lib/terminal-session";
 import { cn } from "@/lib/utils";
 
 /**
@@ -22,10 +21,10 @@ import { cn } from "@/lib/utils";
  * has really drawn a frame, so it never pops in over an empty box.
  *
  * Under the canvas, in the site's drawing language: a caption naming the form
- * being held, a hint for what the pointer does, and — once a visitor has used
- * the prompt — the last lines of their session. Choosing a form happens in the
- * statement's rail, beside it. Nothing sits
- * above it: the identity module owns that corner of the hero.
+ * being held and a hint for what the pointer does. Choosing a form happens in
+ * the statement's rail, beside it, and the session's answers print in the
+ * terminal. Nothing sits above it: the identity module owns that corner of the
+ * hero.
  */
 
 const SculptureScene = dynamic(
@@ -37,15 +36,6 @@ const WARM_DELAY = 600;
 const MOUNT_DELAY = 1400;
 const REVEAL_FLOOR = cue.scene * 1000;
 const REVEAL_TIMEOUT = 7000;
-const LOG_ROWS = 6;
-
-const TONE: Record<Tone, string> = {
-  text: "text-fg",
-  muted: "text-faint",
-  accent: "text-accent",
-  success: "text-[#5f8a12]",
-  prompt: "text-accent",
-};
 
 const pad = (i: number) => String(i + 1).padStart(2, "0");
 
@@ -88,11 +78,6 @@ export function HeroVisual({
   const container = useRef<HTMLDivElement>(null);
 
   const { form } = useSyncExternalStore(sculpture.subscribe, sculpture.getSnapshot, sculpture.getServerSnapshot);
-  const session = useSyncExternalStore(
-    terminalSession.subscribe,
-    terminalSession.getSnapshot,
-    terminalSession.getServerSnapshot,
-  );
 
   const [inView, setInView] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -165,7 +150,6 @@ export function HeroVisual({
 
   const onFirstFrame = useCallback(() => setDrawn(true), []);
   const revealed = floorPassed && (!use3D || drawn || timedOut);
-  const log = session.history.filter((row) => row.length).slice(-LOG_ROWS);
 
   return (
     <motion.div
@@ -190,21 +174,6 @@ export function HeroVisual({
           <SculptureStatic {...placement} />
         )}
       </div>
-
-      {/* --- Session log ---------------------------------------------------- */}
-      {log.length ? (
-        <div className="pointer-events-none absolute bottom-9 left-0 max-w-[62%] font-mono text-[0.6875rem] leading-[1.55]" aria-hidden>
-          {log.map((row, i) => (
-            <p key={`${session.history.length}-${i}`} className="truncate whitespace-pre">
-              {row.map((segment, j) => (
-                <span key={j} className={TONE[segment.tone ?? "text"]}>
-                  {segment.text}
-                </span>
-              ))}
-            </p>
-          ))}
-        </div>
-      ) : null}
 
       {/* --- Caption ------------------------------------------------------
           The form rail lives in the statement now; this just names the figure

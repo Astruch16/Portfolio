@@ -8,9 +8,8 @@ import { HeroBackdrop } from "@/components/hero/hero-backdrop";
 import { HeroCaret } from "@/components/hero/hero-boot";
 import { HeroMeta } from "@/components/hero/hero-meta";
 import { HeroStatement } from "@/components/hero/hero-statement";
-import { StackRuntime } from "@/components/hero/stack-runtime";
 import { HeroVisual } from "@/components/hero/hero-visual";
-import { HeroConsole } from "@/components/hero/hero-console";
+import { HeroTerminal } from "@/components/hero/hero-terminal";
 import { NameField } from "@/components/hero/name-field";
 import { TypeLine } from "@/components/hero/type-line";
 import { Lift } from "@/components/motion/reveal";
@@ -152,7 +151,7 @@ export function Hero() {
         // between the metadata and the object.
         // `gap-y` guarantees a floor between the name block and the statement on
         // short-but-wide viewports, where `mt-auto` has no slack left to give.
-        className="shell relative flex min-h-[min(100svh,50rem)] flex-col pt-[calc(var(--nav-h)+clamp(2rem,6vh,4.25rem))] pb-10 lg:h-full lg:min-h-0 lg:pb-12 lg:gap-y-[clamp(1rem,3vh,2.5rem)]"
+        className="shell relative flex min-h-[min(100svh,50rem)] flex-col pt-[calc(var(--nav-h)+clamp(2rem,6vh,4.25rem))] pb-10 lg:h-full lg:min-h-0 lg:pb-12 lg:gap-y-[clamp(0.875rem,2.4vh,2.5rem)]"
       >
         <HeroCaret
           ref={caretRef}
@@ -173,11 +172,12 @@ export function Hero() {
             and sit above the 3D set, so without it they swallow clicks meant
             for the sculpture. Only the parts that take input opt
             back in, each shrunk to its own content. */}
-        <div className="pointer-events-none relative z-10">
+        {/* Above the statement, so the terminal's panel can open over it. */}
+        <div className="pointer-events-none relative z-20 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
           <h1
             id="hero-name"
             // Negative indent optically aligns the "A" with the monogram above.
-            className="depth display pointer-events-auto -ml-[0.055em] w-fit text-display text-fg"
+            className="depth display pointer-events-auto -ml-[0.055em] w-fit text-display text-fg lg:text-[length:min(var(--text-display),20vh)]"
             style={{ "--depth": 3 } as React.CSSProperties}
           >
             <span className="sr-only">
@@ -216,7 +216,7 @@ export function Hero() {
 
           <p
             aria-hidden
-            className="depth label mt-[clamp(1.25rem,3.5vh,2.25rem)] text-[0.9375rem] tracking-[0.15em] text-muted"
+            className="depth label mt-[clamp(1rem,2.6vh,2.25rem)] text-[0.9375rem] tracking-[0.15em] text-muted"
             style={{ "--depth": 3 } as React.CSSProperties}
           >
             <TypeLine
@@ -236,20 +236,16 @@ export function Hero() {
             />
           </p>
 
-          {/* --- Stack runtime ----------------------------------------------
-              A thin technical strip hung directly off the role, so it reads as
-              an annotation on the title rather than a separate widget. The
-              panels it opens carry all the weight. */}
-          <div className="pointer-events-auto relative z-20 mt-[clamp(1rem,3vh,1.75rem)] w-fit">
-            <StackRuntime delay={t(2.25)} />
-          </div>
-
-          {/* --- Console ------------------------------------------------------
-              Its answers print on the sculpture, and design / build / ship
-              morph it. Arrives with the metadata, once the
-              boot has finished writing the page. */}
-          <Lift delay={t(cue.meta + 0.2)} className="pointer-events-auto relative z-20 mt-[clamp(1rem,2.6vh,1.5rem)] w-fit">
-            <HeroConsole />
+          {/* --- Terminal ----------------------------------------------------
+              The stack and the prompt in one window, filling the space
+              between the role and the statement: as much of it as there is,
+              up to a cap on very tall screens. Its tabs arrive where the stack
+              strip used to, as the boot loads the stack. */}
+          <Lift
+            delay={t(2.25)}
+            className="pointer-events-auto relative z-20 mt-[clamp(0.75rem,1.8vh,1.75rem)] flex w-full max-w-[36rem] flex-col lg:max-h-[27rem] lg:min-h-[3.875rem] lg:max-w-[min(36rem,calc(50vw-var(--gutter)-3.5rem))] lg:flex-1"
+          >
+            <HeroTerminal className="h-[14rem] lg:h-auto lg:min-h-0 lg:flex-1" />
           </Lift>
         </div>
 
