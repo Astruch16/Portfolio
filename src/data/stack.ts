@@ -3,11 +3,12 @@
  *
  * Three categories, each holding the technologies used in it and a one-line
  * example. Edit this file to change the stack — nothing else knows the
- * technologies, and the triggers, counts and panels all read straight from it.
+ * technologies, and the hero terminal's tabs, counts and listings, and its
+ * `stack` command, all read straight from it.
  *
  * The snippets are stock examples, meant to be replaced with real ones from
- * the codebases they come from. Keep lines under ~34 characters so the panel
- * never has to wrap.
+ * the codebases they come from. Keep lines under ~34 characters so the
+ * terminal never has to wrap.
  */
 
 export type SnippetTone = "plain" | "keyword" | "muted" | "success";
@@ -23,6 +24,8 @@ export type StackEntry = {
 export type StackCategory = {
   id: string;
   label: string;
+  /** The hero terminal's tab name, when the label is too long for one. */
+  short?: string;
   /** Shown as the panel's path, e.g. ~/stack/frontend */
   path: string;
   entries: StackEntry[];
@@ -99,6 +102,7 @@ export const stackCategories: StackCategory[] = [
   {
     id: "infrastructure",
     label: "Infrastructure",
+    short: "infra",
     path: "~/stack/infra",
     entries: [
       {

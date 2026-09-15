@@ -692,3 +692,19 @@
     transform: scaleX(1);
   }
 }
+
+/* Hero terminal: rows arrive a beat apart when a tab opens. */
+@keyframes term-line {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.term-line {
+  animation: term-line 360ms var(--ease-out-expo) both;
+}

@@ -10,9 +10,10 @@ export type Segment = { text: string; tone?: Tone };
 /**
  * The hero's live terminal session.
  *
- * The prompt under the hero's stack strip. Its answers print as a short log on
- * the sculpture beside it, and a command per form — design, build, ship,
- * code, measure, iterate — morphs the sculpture into it.
+ * Behind the terminal under the hero's role: which tab it shows — one per stack
+ * category, plus the session itself — and what has been typed into it. Answers
+ * print in the session tab, and a command per form — design, build, ship, code,
+ * measure, iterate — morphs the sculpture beside it.
  *
  * Every answer is read from the site's own data — projects, the stack, site
  * details — so the terminal can never say anything the rest of the site
@@ -23,7 +24,11 @@ export type Segment = { text: string; tone?: Tone };
  * log without either owning it.
  */
 
+/** A stack category's id, or the session's own output. */
+export type TerminalTab = (typeof stackCategories)[number]["id"] | "session";
+
 type SessionState = {
+  tab: TerminalTab;
   /** False until the visitor first touches the prompt. */
   live: boolean;
   history: Segment[][];
@@ -48,13 +53,14 @@ export const COMMANDS = [
   { name: "iterate", hint: "morph the sculpture" },
   { name: "work", hint: "the projects" },
   { name: "open", hint: "open <project>" },
-  { name: "stack", hint: "what I build with" },
+  { name: "stack", hint: "stack [frontend|backend|infra]" },
   { name: "about", hint: "who, what, where" },
   { name: "contact", hint: "get in touch" },
   { name: "clear", hint: "clear the screen" },
 ] as const;
 
 const INITIAL: SessionState = {
+  tab: stackCategories[0].id,
   live: false,
   history: [],
   input: "",
@@ -73,7 +79,20 @@ function set(next: Partial<SessionState>) {
 const muted = (text: string): Segment => ({ text, tone: "muted" });
 const accent = (text: string): Segment => ({ text, tone: "accent" });
 
-function answer(raw: string): { lines: Segment[][]; navigate?: string; clear?: boolean } {
+/** Finds a stack category from a typed name: "frontend", "back", "infra"… */
+function category(query: string) {
+  return query
+    ? stackCategories.find((c) => c.id.startsWith(query) || c.label.toLowerCase().startsWith(query))
+    : undefined;
+}
+
+function answer(raw: string): {
+  lines: Segment[][];
+  navigate?: string;
+  clear?: boolean;
+  /** Show this tab instead of the session. */
+  tab?: TerminalTab;
+} {
   const [command = "", ...args] = raw.trim().toLowerCase().split(/\s+/);
 
   switch (command) {
@@ -125,13 +144,24 @@ function answer(raw: string): { lines: Segment[][]; navigate?: string; clear?: b
       };
     }
 
-    case "stack":
+    case "stack": {
+      const match = category(args.join(" "));
+      if (match) return { lines: [[accent("→ "), { text: `cat ${match.path}` }]], tab: match.id };
       return {
-        lines: stackCategories.map((category) => [
-          accent(category.label.toLowerCase().padEnd(16)),
-          { text: category.entries.map((e) => e.name).join(", ") },
+        lines: stackCategories.map((c) => [
+          accent(c.id.padEnd(16)),
+          { text: c.entries.map((e) => e.name).join(", ") },
         ]),
       };
+    }
+
+    case "frontend":
+    case "backend":
+    case "infra":
+    case "infrastructure": {
+      const match = category(command)!;
+      return { lines: [[accent("→ "), { text: `cat ${match.path}` }]], tab: match.id };
+    }
 
     case "about":
     case "whoami":
@@ -198,6 +228,10 @@ export const terminalSession = {
     set({ input: value.replace(/[^\x20-\x7e]/g, "").slice(0, MAX_INPUT) });
   },
 
+  setTab(tab: TerminalTab) {
+    if (tab !== state.tab) set({ tab });
+  },
+
   requestFocus() {
     set({ focusTick: state.focusTick + 1 });
   },
@@ -214,6 +248,7 @@ export const terminalSession = {
 
     set({
       history: history.slice(-HISTORY_ROWS),
+      tab: result.tab ?? "session",
       input: "",
       announcement: result.lines.map((line) => line.map((s) => s.text).join("")).join(". "),
     });
