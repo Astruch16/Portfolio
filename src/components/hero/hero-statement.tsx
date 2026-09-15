@@ -149,7 +149,7 @@ export function HeroStatement({
       <p
         aria-hidden
         className={cn(
-          "text-[clamp(2.1rem,4.6vw,4.25rem)] leading-[0.95] font-bold tracking-[-0.035em] whitespace-nowrap text-fg uppercase transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]",
+          "font-mono text-[clamp(1.9rem,4.1vw,3.85rem)] leading-[0.95] font-semibold tracking-[-0.04em] [word-spacing:-0.3em] whitespace-nowrap text-fg uppercase transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]",
           visible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
         )}
       >
