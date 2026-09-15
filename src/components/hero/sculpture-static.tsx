@@ -39,8 +39,8 @@ export function SculptureStatic({ className }: { className?: string }) {
       const points = FORMS[form];
       const yaw = -0.5;
       const pitch = 0.26;
-      const scale = Math.min(width, height) * 0.29;
-      const camera = 6.3;
+      const scale = Math.min(width, height) * 0.36;
+      const camera = 5.1;
 
       for (let i = 0; i < COUNT; i += 1) {
         const x = points[i * 3];
@@ -56,7 +56,7 @@ export function SculptureStatic({ className }: { className?: string }) {
         const accent = hash(i * 5.19) < 0.11;
         ctx.fillStyle = accent ? "rgba(114, 87, 255, 0.9)" : `rgba(20, 20, 20, ${(0.3 + depth * 0.62).toFixed(2)})`;
         ctx.beginPath();
-        ctx.arc(width / 2 + x1 * k * scale, height / 2 - y2 * k * scale, (accent ? 1.3 : 0.95) * k, 0, Math.PI * 2);
+        ctx.arc(width / 2 + (x1 + 0.3) * k * scale, height / 2 - (y2 - 0.3) * k * scale, (accent ? 1.3 : 0.95) * k, 0, Math.PI * 2);
         ctx.fill();
       }
     };

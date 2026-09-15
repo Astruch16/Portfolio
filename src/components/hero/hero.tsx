@@ -74,6 +74,11 @@ export function Hero() {
   const caretRef = useRef<HTMLParagraphElement>(null);
   const statementRef = useRef<HTMLDivElement>(null);
   const [travelY, setTravelY] = useState(0);
+  // Distance from the bottom of the hero to the bottom of the statement's
+  // rail, so the sculpture's rule can sit on exactly the same line. Measured,
+  // not derived: when the left column runs tall the statement is pushed below
+  // where its margin alone would put it.
+  const [railOffset, setRailOffset] = useState<number | null>(null);
 
   useEffect(() => {
     const measure = () => {
@@ -82,11 +87,23 @@ export function Hero() {
       if (!caret || !statement) return;
 
       setTravelY(statement.offsetTop - caret.offsetTop - CARET_LEAD);
+      const parent = statement.offsetParent as HTMLElement | null;
+      if (parent) {
+        setRailOffset(parent.clientHeight - (statement.offsetTop + statement.offsetHeight));
+      }
     };
 
     measure();
+    // Fonts landing and the name assembling both change heights without a
+    // window resize.
+    const observer = new ResizeObserver(measure);
+    if (statementRef.current) observer.observe(statementRef.current);
+    if (statementRef.current?.offsetParent) observer.observe(statementRef.current.offsetParent);
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
   }, [pinned]);
 
   // The hero is pinned on wide screens and the next section rides over it, so
@@ -239,6 +256,8 @@ export function Hero() {
           visible={reached(STEP.design)}
           railVisible={reached(STEP.done)}
           animate={!still}
+          // Keep this margin in step with the sculpture's bottom offset below —
+          // the two rules line up across the hero.
           className="relative z-10 mt-12 w-fit lg:mt-auto lg:mb-[clamp(4.75rem,11vh,7rem)]"
         />
 
@@ -259,7 +278,10 @@ export function Hero() {
             with the parallax. */}
         <HeroVisual
           cycling={step >= STEP.done || still}
-          className="mt-12 aspect-4/3 w-full md:w-[78%] md:self-end lg:absolute lg:right-(--gutter) lg:bottom-[5%] lg:z-0 lg:mt-0 lg:aspect-square lg:w-[min(44vw,42rem)]"
+          style={pinned && railOffset != null ? { bottom: railOffset } : undefined}
+          // Its bottom rule sits on the same line as the rail under the statement.
+          // The calc is the first-paint value; the measured offset takes over.
+          className="mt-12 aspect-4/3 w-full md:w-[78%] md:self-end lg:absolute lg:right-(--gutter) lg:bottom-[calc(3rem+clamp(4.75rem,11vh,7rem))] lg:z-0 lg:mt-0 lg:w-[min(50vw,48rem)]"
         />
 
         {/* --- Scroll cue ---------------------------------------------------- */}

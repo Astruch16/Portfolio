@@ -85,9 +85,9 @@ const vertex = /* glsl */ `
     clip.xy = ndc * clip.w;
 
     gl_Position = clip;
-    gl_PointSize = uSize * uPixelRatio * (1.0 + aAccent * 0.7 + touch * 0.8) * (5.2 / -view.z);
+    gl_PointSize = uSize * uPixelRatio * (1.0 + aAccent * 0.7 + touch * 0.8) * (4.2 / -view.z);
 
-    vDepth = clamp((-view.z - 4.1) / 3.4, 0.0, 1.0);
+    vDepth = clamp((-view.z - 2.9) / 3.4, 0.0, 1.0);
     vAccent = aAccent;
     vTouch = touch;
   }
@@ -217,7 +217,8 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
     u.uTime.value = t;
     u.uBurst.value = burst.current.value;
     u.uPointer.value = [it.pointer.x, it.pointer.y];
-    u.uPointerOn.value += ((it.pointer.on ? 1 : 0) - u.uPointerOn.value) * (1 - Math.exp(-dt * 8));
+    u.uPointerOn.value +=
+      ((it.pointer.on ? 1 : 0) - u.uPointerOn.value) * (1 - Math.exp(-dt * 8));
     u.uAspect.value = size.width / Math.max(1, size.height);
     u.uPixelRatio.value = gl.getPixelRatio();
     u.uOpacity.value = Math.min(1, u.uOpacity.value + dt * 1.4);
@@ -231,27 +232,46 @@ function Particles({ onFirstFrame }: { onFirstFrame?: () => void }) {
   });
 
   return (
-    <group ref={group}>
-      <points frustumCulled={false}>
-        <bufferGeometry>
-          {/* `position` is required by three for bounds; the shader ignores it. */}
-          <bufferAttribute attach="attributes-position" args={[attributes.forms[0], 3]} />
-          {attributes.forms.map((form, i) => (
-            <bufferAttribute key={i} attach={`attributes-aForm${i}`} args={[form, 3]} />
-          ))}
-          <bufferAttribute attach="attributes-aSeed" args={[attributes.seed, 4]} />
-          <bufferAttribute attach="attributes-aAccent" args={[attributes.accent, 1]} />
-        </bufferGeometry>
-        <shaderMaterial
-          ref={material}
-          vertexShader={vertex}
-          fragmentShader={fragment}
-          uniforms={uniforms}
-          transparent
-          depthWrite={false}
-          blending={NormalBlending}
-        />
-      </points>
+    // Offset rather than centred. The box reaches up under the identity module
+    // and left under the name, so the forms sit low and right within it. On
+    // the forms, not the camera: R3F aims its camera at the origin, so moving
+    // the camera only changes the angle.
+    <group position={[0.3, -0.3, 0]}>
+      <group ref={group}>
+        <points frustumCulled={false}>
+          <bufferGeometry>
+            {/* `position` is required by three for bounds; the shader ignores it. */}
+            <bufferAttribute
+              attach="attributes-position"
+              args={[attributes.forms[0], 3]}
+            />
+            {attributes.forms.map((form, i) => (
+              <bufferAttribute
+                key={i}
+                attach={`attributes-aForm${i}`}
+                args={[form, 3]}
+              />
+            ))}
+            <bufferAttribute
+              attach="attributes-aSeed"
+              args={[attributes.seed, 4]}
+            />
+            <bufferAttribute
+              attach="attributes-aAccent"
+              args={[attributes.accent, 1]}
+            />
+          </bufferGeometry>
+          <shaderMaterial
+            ref={material}
+            vertexShader={vertex}
+            fragmentShader={fragment}
+            uniforms={uniforms}
+            transparent
+            depthWrite={false}
+            blending={NormalBlending}
+          />
+        </points>
+      </group>
     </group>
   );
 }
@@ -283,7 +303,12 @@ export function SculptureScene({
     };
 
     const down = (event: PointerEvent) => {
-      it.drag = { active: true, lastX: event.clientX, lastY: event.clientY, moved: 0 };
+      it.drag = {
+        active: true,
+        lastX: event.clientX,
+        lastY: event.clientY,
+        moved: 0,
+      };
       it.spin.vYaw = 0;
       it.spin.vPitch = 0;
       el.setPointerCapture(event.pointerId);
@@ -306,7 +331,8 @@ export function SculptureScene({
     const up = (event: PointerEvent) => {
       if (it.drag.active && it.drag.moved < 5) sculpture.scatter();
       it.drag.active = false;
-      if (el.hasPointerCapture(event.pointerId)) el.releasePointerCapture(event.pointerId);
+      if (el.hasPointerCapture(event.pointerId))
+        el.releasePointerCapture(event.pointerId);
     };
     const leave = () => {
       if (!it.drag.active) it.pointer.on = false;
@@ -347,7 +373,7 @@ export function SculptureScene({
         frameloop={active ? "always" : "never"}
         dpr={[1, 1.75]}
         gl={{ antialias: false, alpha: true }}
-        camera={{ position: [0, 0.35, 6.3], fov: 38 }}
+        camera={{ position: [0, 0.3, 5.1], fov: 38 }}
       >
         <Particles onFirstFrame={onFirstFrame} />
       </Canvas>

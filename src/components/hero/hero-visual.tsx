@@ -49,7 +49,15 @@ const TONE: Record<Tone, string> = {
 
 const pad = (i: number) => String(i + 1).padStart(2, "0");
 
-export function HeroVisual({ className, cycling }: { className?: string; cycling: boolean }) {
+export function HeroVisual({
+  className,
+  style,
+  cycling,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  cycling: boolean;
+}) {
   const wide = useMediaQuery("(min-width: 1024px)");
   const still = useMediaQuery("(prefers-reduced-motion: reduce)");
   const container = useRef<HTMLDivElement>(null);
@@ -114,6 +122,7 @@ export function HeroVisual({ className, cycling }: { className?: string; cycling
     <motion.div
       ref={container}
       className={cn("relative", className)}
+      style={style}
       initial={{ opacity: 0, scale: 0.97 }}
       animate={revealed ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.97 }}
       transition={{ duration: 1.2, ease: easing.outQuart }}
@@ -135,7 +144,7 @@ export function HeroVisual({ className, cycling }: { className?: string; cycling
 
       {/* --- Session log ---------------------------------------------------- */}
       {log.length ? (
-        <div className="pointer-events-none absolute bottom-10 left-0 max-w-[62%] font-mono text-[0.6875rem] leading-[1.55]" aria-hidden>
+        <div className="pointer-events-none absolute bottom-9 left-0 max-w-[62%] font-mono text-[0.6875rem] leading-[1.55]" aria-hidden>
           {log.map((row, i) => (
             <p key={`${session.history.length}-${i}`} className="truncate whitespace-pre">
               {row.map((segment, j) => (
@@ -151,7 +160,9 @@ export function HeroVisual({ className, cycling }: { className?: string; cycling
       {/* --- Caption ------------------------------------------------------
           The form rail lives in the statement now; this just names the figure
           and says what the pointer does. */}
-      <div className="pointer-events-none absolute right-0 bottom-0 left-0 flex items-baseline justify-between gap-4 border-t border-hairline pt-2.5">
+      {/* Label above the rule, like the statement's rail, so the rule is the
+          visual's bottom edge and lines up with the rail across the hero. */}
+      <div className="pointer-events-none absolute right-0 bottom-0 left-0 flex items-baseline justify-between gap-4 border-b border-hairline pb-2">
         <p className="label text-fg">
           <span className="text-accent">Fig. {pad(form)}</span>
           <span className="text-faint"> / </span>
