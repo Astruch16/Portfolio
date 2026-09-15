@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 
 import { MaskReveal } from "@/components/motion/reveal";
 import type { BuildLogEntry, BuildLogType } from "@/data/build-log";
+import { TYPE_META } from "@/lib/build-log-types";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,14 +17,6 @@ import { cn } from "@/lib/utils";
  * the shared <MotionProvider reducedMotion="user">.
  */
 
-const TYPE_META: Record<BuildLogType, { badge: string; filter: string; color: string }> = {
-  ship: { badge: "Ship", filter: "Shipped", color: "#b6e53b" },
-  build: { badge: "Build", filter: "Build", color: "#7257ff" },
-  fix: { badge: "Fix", filter: "Fix", color: "#f5b74a" },
-  learn: { badge: "Learn", filter: "Learn", color: "#22d3ee" },
-  experiment: { badge: "Experiment", filter: "Experiment", color: "#8b5cf6" },
-  decision: { badge: "Decision", filter: "Decision", color: "#e6e6ea" },
-};
 
 const TYPE_ORDER: BuildLogType[] = [
   "ship",

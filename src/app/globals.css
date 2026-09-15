@@ -708,3 +708,75 @@
 .term-line {
   animation: term-line 360ms var(--ease-out-expo) both;
 }
+
+/* --- Homepage chapters --------------------------------------------------- */
+
+/* Toolkit bands: two copies of the run, looped at exactly half its width. */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee {
+  animation: marquee 48s linear infinite;
+}
+
+/* A discipline panel's figure draws in when it opens; its dashed guides,
+   whose dash pattern a draw would overwrite, fade in behind it instead. */
+@keyframes capability-draw {
+  from {
+    stroke-dashoffset: 600;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes capability-fade {
+  from {
+    opacity: 0;
+  }
+}
+.capability-draw > :not([stroke-dasharray]) {
+  stroke-dasharray: 600;
+  animation: capability-draw 1.4s var(--ease-out-quart) both;
+}
+.capability-draw > [stroke-dasharray] {
+  animation: capability-fade 900ms var(--ease-out-quart) 400ms both;
+}
+@keyframes capability-item {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes capability-spill {
+  50% {
+    transform: translate(18%, 12%) scale(1.15);
+  }
+}
+.capability-spill {
+  animation: capability-spill 22s var(--ease-in-out-quart) infinite;
+}
+
+/* The build-log chapter's scan line: a faint band of light passing down. */
+@keyframes log-scan {
+  from {
+    top: -10rem;
+  }
+  to {
+    top: 100%;
+  }
+}
+.log-scan {
+  animation: log-scan 9s linear infinite;
+}
+
+/* The contact chapter's ring of text, turning slowly around its button. */
+@keyframes ring-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ring-turn {
+  animation: ring-turn 24s linear infinite;
+}
