@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { SculptureStatic } from "@/components/hero/sculpture-static";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cue, easing } from "@/lib/motion";
-import { FORMS, type FormIndex } from "@/lib/sculpture-forms";
+import { FORMS } from "@/lib/sculpture-forms";
 import { sculpture } from "@/lib/sculpture-state";
 import { terminalSession, type Tone } from "@/lib/terminal-session";
 import { cn } from "@/lib/utils";
@@ -21,10 +21,10 @@ import { cn } from "@/lib/utils";
  * during a quiet moment of the boot and the set only fades in once the renderer
  * has really drawn a frame, so it never pops in over an empty box.
  *
- * Under the canvas, in the site's drawing language: tabs for the six forms —
- * the one being held written out, the rest as numbers so all six and the hint
- * fit on one line — a hint for what the pointer does, and — once a
- * visitor has used the prompt — the last lines of their session. Nothing sits
+ * Under the canvas, in the site's drawing language: a caption naming the form
+ * being held, a hint for what the pointer does, and — once a visitor has used
+ * the prompt — the last lines of their session. Choosing a form happens in the
+ * statement's rail, beside it. Nothing sits
  * above it: the identity module owns that corner of the hero.
  */
 
@@ -37,8 +37,6 @@ const WARM_DELAY = 600;
 const MOUNT_DELAY = 1400;
 const REVEAL_FLOOR = cue.scene * 1000;
 const REVEAL_TIMEOUT = 7000;
-/** How often the idle cycle moves on once the boot is done. */
-const CYCLE_MS = 6500;
 const LOG_ROWS = 6;
 
 const TONE: Record<Tone, string> = {
@@ -100,13 +98,11 @@ export function HeroVisual({ className, cycling }: { className?: string; cycling
     return () => observer.disconnect();
   }, []);
 
-  // Once the boot has walked the statement's three forms, carry on through all
-  // six — `suggest` stands aside for a while whenever the visitor has chosen one.
+  // Once the boot is done, the cycle moves on whenever the held form's dwell is
+  // up — the same numbers the statement's rail draws its bar from.
   useEffect(() => {
     if (!cycling || still) return;
-    const timer = setInterval(() => {
-      sculpture.suggest(((sculpture.getSnapshot().form + 1) % FORMS.length) as FormIndex);
-    }, CYCLE_MS);
+    const timer = setInterval(() => sculpture.tick(), 200);
     return () => clearInterval(timer);
   }, [cycling, still]);
 
@@ -139,7 +135,7 @@ export function HeroVisual({ className, cycling }: { className?: string; cycling
 
       {/* --- Session log ---------------------------------------------------- */}
       {log.length ? (
-        <div className="pointer-events-none absolute bottom-12 left-0 max-w-[62%] font-mono text-[0.6875rem] leading-[1.55]" aria-hidden>
+        <div className="pointer-events-none absolute bottom-10 left-0 max-w-[62%] font-mono text-[0.6875rem] leading-[1.55]" aria-hidden>
           {log.map((row, i) => (
             <p key={`${session.history.length}-${i}`} className="truncate whitespace-pre">
               {row.map((segment, j) => (
@@ -152,40 +148,16 @@ export function HeroVisual({ className, cycling }: { className?: string; cycling
         </div>
       ) : null}
 
-      {/* --- Form tabs ------------------------------------------------------ */}
-      <div
-        role="tablist"
-        aria-label="Sculpture form"
-        className="absolute right-0 bottom-0 left-0 flex items-center gap-0.5 border-t border-hairline pt-2"
-      >
-        {FORMS.map((name, i) => {
-          const on = i === form;
-          return (
-            <button
-              key={name}
-              type="button"
-              role="tab"
-              aria-selected={on}
-              title={name}
-              onClick={() => sculpture.choose(i as FormIndex)}
-              className={cn(
-                "group/tab relative shrink-0 px-2 py-1.5 font-mono text-[0.6875rem] tracking-[0.14em] uppercase transition-colors",
-                on ? "text-fg" : "text-faint hover:text-muted",
-              )}
-            >
-              <span className={on ? "text-accent" : undefined}>{pad(i)}</span>
-              {/* The held form is written out; the rest stay numbers, named for
-                  screen readers and on hover. */}
-              <span className={on ? "ml-1.5" : "sr-only"}>{name}</span>
-              <span
-                aria-hidden
-                className="absolute inset-x-2 -bottom-px block h-px origin-left bg-accent transition-transform duration-500 ease-[var(--ease-out-expo)]"
-                style={{ transform: `scaleX(${on ? 1 : 0})` }}
-              />
-            </button>
-          );
-        })}
-        <p className="label ml-auto hidden text-faint [@media(hover:hover)]:block" aria-hidden>
+      {/* --- Caption ------------------------------------------------------
+          The form rail lives in the statement now; this just names the figure
+          and says what the pointer does. */}
+      <div className="pointer-events-none absolute right-0 bottom-0 left-0 flex items-baseline justify-between gap-4 border-t border-hairline pt-2.5">
+        <p className="label text-fg">
+          <span className="text-accent">Fig. {pad(form)}</span>
+          <span className="text-faint"> / </span>
+          {FORMS[form]}
+        </p>
+        <p className="label hidden text-faint [@media(hover:hover)]:block" aria-hidden>
           Drag to turn · click to scatter
         </p>
       </div>

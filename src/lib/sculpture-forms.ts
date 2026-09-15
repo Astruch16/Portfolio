@@ -1,8 +1,8 @@
 /**
  * The three forms the hero sculpture morphs between, as point clouds.
  *
- * The first three are the lines of the statement beside it; the rest carry the
- * cycle on once the statement has been written:
+ * Each is also the verb of the statement beside it — I design it, I build it,
+ * I ship it, I code it, I measure it, I iterate it — so the names are verbs:
  *
  *   0 · DESIGN  — an artboard, exploded: frame, header, sidebar and cards on
  *                 separate planes, a pen path drawn across them
@@ -11,7 +11,7 @@
  *   2 · SHIP    — a globe: lines of latitude and longitude, routes arcing
  *                 between points on its surface, an orbit around it
  *   3 · CODE    — `</>`, extruded, in front of the faint lines of a file
- *   4 · DATA    — a wave surface, measured: a mesh with markers standing on it
+ *   4 · MEASURE — a wave surface, measured: a mesh with markers standing on it
  *   5 · ITERATE — a trefoil knot, three strands wide: a loop with no end
  *
  * Every form is described as polylines and then sampled evenly by length, so
@@ -24,7 +24,7 @@
  * fallback both read these, and draw the same sculpture every visit.
  */
 
-export const FORMS = ["Design", "Build", "Ship", "Code", "Data", "Iterate"] as const;
+export const FORMS = ["Design", "Build", "Ship", "Code", "Measure", "Iterate"] as const;
 export type FormIndex = 0 | 1 | 2 | 3 | 4 | 5;
 
 type Vec3 = [number, number, number];
