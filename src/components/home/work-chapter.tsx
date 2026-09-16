@@ -1,6 +1,6 @@
 import { ArrowDownRight } from "lucide-react";
 
-import { SignalField } from "@/components/home/signal-field";
+import { SignalField } from "@/components/visuals/signal-field";
 import { WorkShowcase, type ShowcaseItem } from "@/components/home/work-showcase";
 import { DrawLine, Lift, MaskReveal } from "@/components/motion/reveal";
 import { caseStudyBySlug } from "@/data/case-studies";

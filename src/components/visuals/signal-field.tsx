@@ -5,8 +5,8 @@ import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * A field of short strokes turning slowly in a current — the homepage's
- * background texture for its dark chapters.
+ * A field of short strokes turning slowly in a current — the background
+ * texture for the site's dark chapters.
  *
  * Each point on a loose grid carries one dash whose angle comes from a pair of
  * slow interfering waves, so the whole field reads like a wind map or a
