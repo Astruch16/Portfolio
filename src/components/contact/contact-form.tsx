@@ -5,11 +5,13 @@ import { useActionState, useCallback, useEffect, useId, useRef, useState } from 
 
 import { sendContactMessage } from "@/app/contact/actions";
 import { sequenceTone } from "@/components/case/sequence-tones";
+import { PacketStream } from "@/components/contact/packet-stream";
 import { TopicSelect } from "@/components/contact/topic-select";
-import { Transmission, type Draft } from "@/components/contact/transmission";
+import { UplinkPanel, type Draft } from "@/components/contact/uplink-panel";
 import { Magnetic } from "@/components/motion/magnetic";
 import { Lift } from "@/components/motion/reveal";
-import { initialContactState, LIMITS } from "@/lib/contact-message";
+import { draftStatus, initialContactState, LIMITS } from "@/lib/contact-message";
+import { uplink } from "@/lib/uplink";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,9 +23,11 @@ import { cn } from "@/lib/utils";
  * accent on focus. Nothing is a rounded input on a panel, because nothing else
  * on this site is.
  *
- * Beside it, the transmission panel mirrors the envelope as it is written. The
- * draft is read straight off the form on input rather than held per field, so
- * the inputs stay uncontrolled and a rejected submission keeps what was typed.
+ * Beside it, the uplink panel mirrors the envelope as it is written, and the
+ * page answers the writing: every keystroke sends a packet across the panel and
+ * a pulse along the carrier behind the headline. The draft is read straight off
+ * the form on input rather than held per field, so the inputs stay uncontrolled
+ * and a rejected submission keeps what was typed.
  *
  * Submits through a Server Action, so it still works with JavaScript disabled —
  * the enhancements layered on top (pending state, inline errors, the timing
@@ -142,6 +146,46 @@ export function ContactForm() {
     [],
   );
 
+  // React resets an uncontrolled form once its action settles, and the select
+  // answers that by reporting no value at all — so a rejected submission would
+  // throw the visitor's choice away while keeping every typed field. Falling
+  // back to what the action handed back restores it, with the visitor's own
+  // choice always winning.
+  const composed: Draft = { ...draft, topic: draft.topic || state.values?.topic || "" };
+
+  // Everything drawn around the form — the carrier behind the headline, the
+  // packets in the panel — reads the draft from here rather than from props,
+  // since none of it renders through React.
+  const status = draftStatus(composed);
+  const filled = [composed.name, composed.email, composed.topic, composed.message].filter(
+    (value) => value.trim().length > 0,
+  ).length;
+
+  const sent = state.status === "sent";
+
+  useEffect(() => {
+    uplink.set({
+      filled,
+      length: draft.message.length,
+      phase: sent
+        ? "sent"
+        : pending
+          ? "sending"
+          : status === "ready"
+            ? "ready"
+            : status === "empty"
+              ? "idle"
+              : "writing",
+    });
+  }, [filled, draft.message.length, status, pending, sent]);
+
+  // The send itself: everything still queued goes at once.
+  useEffect(() => {
+    if (pending || sent) uplink.pulse(3);
+  }, [pending, sent]);
+
+  useEffect(() => () => uplink.reset(), []);
+
   // Absent without JavaScript, which the server reads as "cannot judge" rather
   // than as a bot. Only a suspiciously fast round trip is ever rejected.
   //
@@ -166,7 +210,7 @@ export function ContactForm() {
     }
   }, [state.status]);
 
-  if (state.status === "sent") {
+  if (sent) {
     return (
       <div
         ref={outcome}
@@ -180,15 +224,17 @@ export function ContactForm() {
             className={cn("exhibit-mark absolute z-10 block size-3", corner)}
           />
         ))}
-        <div className="border border-hairline-strong bg-void/60 px-8 py-[clamp(3rem,9vh,5rem)] sm:px-12">
-          <p className="label flex items-center gap-2.5 text-signal">
+        <div className="relative overflow-hidden border border-hairline-strong bg-void/60 px-8 py-[clamp(3rem,9vh,5rem)] sm:px-12">
+          {/* The link, still up: the last packets landing on the dish. */}
+          <PacketStream className="pointer-events-none absolute inset-x-0 top-0 h-32 w-full opacity-70" />
+          <p className="label relative flex items-center gap-2.5 text-signal">
             <Check aria-hidden strokeWidth={2} className="size-4" />
             Transmission complete
           </p>
-          <p className="display mt-7 max-w-[18ch] text-[clamp(1.75rem,4vw,3rem)] leading-[1.02] text-fg">
+          <p className="display relative mt-7 max-w-[18ch] text-[clamp(1.75rem,4vw,3rem)] leading-[1.02] text-fg">
             Message sent.
           </p>
-          <p className="mt-6 max-w-[46ch] text-lead text-muted">
+          <p className="relative mt-6 max-w-[46ch] text-lead text-muted">
             Thanks &mdash; it&rsquo;s in my inbox. I&rsquo;ll reply to the
             address you gave me, usually within a few days.
           </p>
@@ -216,8 +262,18 @@ export function ContactForm() {
         <form
           ref={form}
           action={formAction}
-          onInput={(event) => readDraft(event.currentTarget)}
+          onInput={(event) => {
+            readDraft(event.currentTarget);
+            uplink.pulse(0.85);
+          }}
           onChange={(event) => readDraft(event.currentTarget)}
+          // Send from the keyboard without leaving the message.
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+              event.preventDefault();
+              event.currentTarget.requestSubmit();
+            }
+          }}
           className="border border-hairline-strong bg-void/40 px-6 py-8 sm:px-10 sm:py-10"
         >
           {/* Hidden from people, irresistible to form-fillers. Not `display:
@@ -275,7 +331,7 @@ export function ContactForm() {
                 <TopicSelect
                   id={field("topic")}
                   name="topic"
-                  defaultValue={state.values?.topic}
+                  value={composed.topic}
                   invalid={Boolean(state.errors.topic)}
                   describedBy={
                     state.errors.topic ? `${field("topic")}-error` : undefined
@@ -345,6 +401,33 @@ export function ContactForm() {
               </button>
             </Magnetic>
 
+            {/* The same reading the panel gives, for anyone who can't see it —
+                it's hidden below lg, where the form is the whole page. */}
+            <p className="label flex items-center gap-2.5 text-faint lg:hidden">
+              Signal
+              <span aria-hidden className="flex items-end gap-1">
+                {[0, 1, 2, 3].map((i) => (
+                  <span
+                    key={i}
+                    className="block w-2 transition-colors duration-500"
+                    style={{
+                      height: 6 + i * 3,
+                      backgroundColor:
+                        i < filled ? "var(--color-signal)" : "var(--surface-hairline-strong)",
+                    }}
+                  />
+                ))}
+              </span>
+              <span className="text-fg tabular-nums">{filled} / 4</span>
+            </p>
+
+            <p className="label hidden items-center gap-2 text-faint [@media(hover:hover)]:flex">
+              <kbd className="border border-hairline-strong px-1.5 py-0.5">⌘</kbd>
+              <span className="text-faint/60">+</span>
+              <kbd className="border border-hairline-strong px-1.5 py-0.5">&crarr;</kbd>
+              to send
+            </p>
+
             {state.status === "invalid" ? (
               <p className="label text-[#e0a94f]">Check the fields above.</p>
             ) : null}
@@ -372,7 +455,7 @@ export function ContactForm() {
       <aside className="col-span-12 hidden lg:col-span-5 lg:block">
         <div className="lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
           <Lift onView delay={0.34}>
-            <Transmission draft={draft} />
+            <UplinkPanel draft={composed} sending={pending} />
           </Lift>
 
           {/* What the form actually does with a message. The reason this page

@@ -20,6 +20,10 @@ import { cn } from "@/lib/utils";
  * the shared `panel-in` / `panel-out` keyframes anchored to the trigger, so it
  * grows out of the field rather than appearing somewhere near it.
  *
+ * Controlled rather than uncontrolled: React resets an uncontrolled form once
+ * its action settles, which silently threw away the visitor's choice every time
+ * a submission came back rejected while every typed field kept its value.
+ *
  * A `<noscript>` fallback keeps the plain native control for anyone without
  * JavaScript — the rest of the form already works without it, and this field
  * would otherwise be the one thing that silently could not be filled in.
@@ -36,7 +40,7 @@ const NOTES: Record<Topic, string> = {
 export function TopicSelect({
   id,
   name,
-  defaultValue,
+  value,
   invalid,
   describedBy,
   onValueChange,
@@ -44,7 +48,8 @@ export function TopicSelect({
 }: {
   id: string;
   name: string;
-  defaultValue?: string;
+  /** Controlled by the form, so a rejected submission keeps the choice. */
+  value: string;
   invalid?: boolean;
   describedBy?: string;
   onValueChange: (value: string | undefined) => void;
@@ -55,7 +60,7 @@ export function TopicSelect({
       <Select.Root
         name={name}
         required
-        defaultValue={defaultValue || undefined}
+        value={value || undefined}
         onValueChange={onValueChange}
       >
         <Select.Trigger

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
+import { CarrierWave } from "@/components/contact/carrier-wave";
 import { ContactForm } from "@/components/contact/contact-form";
 import { LocalTime } from "@/components/contact/local-time";
 import { StatusDot } from "@/components/layout/status-dot";
@@ -17,7 +18,10 @@ import { contact, site } from "@/data/site";
  *
  * Two dark regions either side of a light one, so the page has the same
  * surface rhythm as the rest of the site and the nav inverts through it.
- * Server-rendered apart from two small islands: the clock and the copy button.
+ * Server-rendered around the islands that have to move: the clock, the form,
+ * and the carrier under the headline — a live link that answers the pointer
+ * and every key pressed in the form, so the page is visibly listening before a
+ * word has been sent.
  */
 
 export const metadata: Metadata = {
@@ -106,7 +110,31 @@ export default function ContactPage() {
           </Lift>
         </header>
 
-        <div className="shell pt-[clamp(2.5rem,7vh,4.5rem)] pb-[clamp(3.5rem,10vh,7rem)]">
+        {/* --- The link ------------------------------------------------
+            The channel, drawn: it lifts under the pointer, and every key
+            pressed in the form below sends a pulse down it. */}
+        <div className="shell mt-[clamp(2rem,6vh,3.5rem)]">
+          <Lift onView delay={0.2}>
+            <div className="flex items-baseline justify-between gap-4 border-b border-hairline pb-2">
+              <p className="label text-faint">
+                <span className="text-accent">Channel</span>
+                <span className="text-faint/60"> / </span>
+                Open
+              </p>
+              <p className="label flex items-center gap-2.5 text-faint">
+                <StatusDot />
+                {site.location.city}
+                <span className="text-faint/60">/</span>
+                <span className="text-fg tabular-nums">
+                  <LocalTime timezone={contact.timezone} />
+                </span>
+              </p>
+            </div>
+            <CarrierWave className="h-[clamp(4.5rem,11vh,7rem)] w-full" />
+          </Lift>
+        </div>
+
+        <div className="shell pt-[clamp(2rem,5vh,3.5rem)] pb-[clamp(3.5rem,10vh,7rem)]">
           <Lift onView delay={0.22} className="mb-8">
             <p className="label text-faint">Write to me</p>
           </Lift>
