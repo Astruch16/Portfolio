@@ -385,8 +385,10 @@ export function Archive({ items }: { items: ArchiveItem[] }) {
   // is looked up in the shown set, so it simply stops finding it.
   const clear = useCallback(() => setHovered(null), []);
 
+  // One wrapper, so the sticky controls stop sticking where the set ends
+  // instead of riding over the rest of the page.
   return (
-    <>
+    <div className="relative">
       {/* --- Controls -------------------------------------------------------- */}
       <div className="shell sticky top-[var(--nav-h)] z-30 -mx-[var(--gutter)] w-auto border-y border-hairline bg-bg/85 px-(--gutter) backdrop-blur-md">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 py-3">
@@ -510,6 +512,6 @@ export function Archive({ items }: { items: ArchiveItem[] }) {
       </div>
 
       <CursorPreview item={preview ?? null} />
-    </>
+    </div>
   );
 }

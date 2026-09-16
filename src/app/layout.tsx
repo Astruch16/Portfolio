@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { Navigation } from "@/components/layout/navigation";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { MotionProvider } from "@/components/motion/motion-provider";
 import { site } from "@/data/site";
 import "./globals.css";
@@ -79,6 +80,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <MotionProvider>
           <Navigation />
           <main id="main">{children}</main>
+          <SiteFooter />
         </MotionProvider>
         <div aria-hidden className="grain" />
       </body>
