@@ -40,6 +40,173 @@ export type BuildLogEntry = {
 
 export const buildLog: BuildLogEntry[] = [
   {
+    id: "work-archive",
+    date: "2026-09-15",
+    project: "Portfolio",
+    type: "build",
+    title: "Turned the work page into an archive you can use",
+    summary:
+      "Five fixed blocks became a filterable set with two ways to read it, and the screenshots moved onto the cursor.",
+    details: [
+      "Filters counted from the project data rather than written as copy.",
+      "An index view: a line per project, with the case study's screenshot riding the cursor and the rest of the set dimmed.",
+      "A plates view: the screenshots take the page in a staggered sheet.",
+      "Keyboard focus dims the set the same way, but never raises a preview it cannot place.",
+    ],
+    technologies: ["Motion", "Next.js Image", "TypeScript"],
+    link: "/work",
+  },
+  {
+    id: "contact-uplink",
+    date: "2026-09-15",
+    project: "Portfolio",
+    type: "build",
+    title: "Made the contact page answer the person writing",
+    summary:
+      "A carrier wave under the headline and a dish in the panel, both fed by the same keystrokes as the form.",
+    details: [
+      "A tiny store carries keystrokes and draft state to two canvases; neither re-renders React.",
+      "Every character typed launches a packet that the dish absorbs and rings for.",
+      "A signal meter reads one bar per field, so filling the form reads as bringing a channel up.",
+      "Both canvases pause off screen and draw a single still frame under reduced motion.",
+    ],
+    technologies: ["Canvas", "React", "TypeScript"],
+    link: "/contact",
+  },
+  {
+    id: "contact-topic-reset",
+    date: "2026-09-15",
+    project: "Portfolio",
+    type: "fix",
+    title: "The one field a rejected submission kept losing",
+    summary:
+      "Every typed field survived a failed send. The topic select quietly did not.",
+    details: [
+      "React resets an uncontrolled form once its action settles.",
+      "The select answered that reset by reporting its value as undefined, so the choice was thrown away while the text fields were restored from the action's own values.",
+      "Controlling it — and falling back to what the action hands back — keeps the choice through a rejection.",
+    ],
+    technologies: ["React", "Server Actions", "Radix UI"],
+    link: "/contact",
+  },
+  {
+    id: "home-chapters",
+    date: "2026-09-15",
+    project: "Portfolio",
+    type: "build",
+    title: "Rebuilt the homepage under the hero as four chapters",
+    summary:
+      "The page used to end after five project rows. It now runs work, disciplines, the build log and contact, with a rail that tracks them.",
+    details: [
+      "A pinned stage holds whichever project is being read, its screenshots wiping in and drifting as the page moves.",
+      "The light behind the stage takes the project's own colour.",
+      "Disciplines open as panels that draw their figure; the toolkit runs past in two bands.",
+      "A chapter rail drawn in mix-blend-difference reads on both the cream and the dark chapters without tracking which is underneath.",
+    ],
+    technologies: ["Motion", "Canvas", "Next.js"],
+    link: "/",
+    featured: true,
+  },
+  {
+    id: "hero-terminal",
+    date: "2026-09-15",
+    project: "Portfolio",
+    type: "build",
+    title: "Put the stack and the prompt in one terminal",
+    summary:
+      "Two thin strips and an empty gap became a window that fills whatever height the hero leaves it.",
+    details: [
+      "A tab per stack category, plus the session the commands answer in.",
+      "The body counts the rows that fit and lays the listing out for them — spaced headings on a tall screen, a line of names on a short one.",
+      "Where even that won't fit, the full listing opens as a panel while the terminal is in use.",
+    ],
+    technologies: ["React", "ResizeObserver", "Tailwind CSS"],
+    link: "/",
+  },
+  {
+    id: "hero-statement-live",
+    date: "2026-09-15",
+    project: "Portfolio",
+    type: "build",
+    title: "One live line instead of three fixed ones",
+    summary:
+      "\"I design it / I build it / I ship it\" said its piece once and then sat there. Now the verb is whatever the sculpture is holding.",
+    details: [
+      "The verb decodes through the same code symbols the name is built from.",
+      "A rail of all six forms doubles as the control, each carrying a bar that fills for exactly as long as that form holds.",
+      "The bar and the cycle read the same two numbers, so they can't disagree.",
+      "Set in the mono face the terminal and the rail use, which also stopped the verb jittering in width as it decodes.",
+    ],
+    technologies: ["React", "requestAnimationFrame", "TypeScript"],
+    link: "/",
+  },
+  {
+    id: "sculpture-context-loss",
+    date: "2026-09-14",
+    project: "Portfolio",
+    type: "fix",
+    title: "The sculpture that never came back",
+    summary:
+      "Three of the six forms looked broken. The renderer had lost its WebGL context and nothing ever asked for another.",
+    details: [
+      "A GPU reset, too many live contexts, a backgrounded tab — or, in development, any hot reload — drops the context.",
+      "The canvas stays on the page and simply never draws again.",
+      "Listening for webglcontextlost and remounting the canvas brings it back; verified by forcing a loss through WEBGL_lose_context.",
+    ],
+    technologies: ["React Three Fiber", "WebGL"],
+    link: "/",
+  },
+  {
+    id: "hero-sculpture",
+    date: "2026-09-14",
+    project: "Portfolio",
+    type: "build",
+    title: "Replaced the laptop with a particle sculpture",
+    summary:
+      "A few thousand points holding six forms — design, build, ship, code, measure, iterate — morphing between them in one draw call.",
+    details: [
+      "Every particle carries its position in all six forms as attributes; one shader blends them by six weights.",
+      "The pointer is handled in screen space inside the same shader, so a push is the same size at any depth.",
+      "Drawn in ink on the cream page rather than as glowing points: additive glow disappears on paper.",
+      "A flat canvas version draws the same forms for phones and reduced motion, and never downloads three.js.",
+    ],
+    technologies: ["React Three Fiber", "GLSL", "Canvas"],
+    link: "/",
+  },
+  {
+    id: "about-redesign",
+    date: "2026-09-13",
+    project: "Portfolio",
+    type: "build",
+    title: "Rebuilt the about page as a route in",
+    summary:
+      "Hydrogeology to design engineering, told as chapters on a rail rather than as a wall of paragraphs.",
+    details: [
+      "Each chapter carries its own technical figure, drawn rather than illustrated.",
+      "Scroll-played moments sit under each chapter, with placeholders where the real ones are still owed.",
+      "The opening's topographic map is drawn entirely in tiny code symbols — marching squares, one symbol per contour crossing.",
+      "The portrait came out at Adam's request; the page holds without it.",
+    ],
+    technologies: ["Canvas", "Motion", "IntersectionObserver"],
+    link: "/about",
+  },
+  {
+    id: "contact-form-privacy",
+    date: "2026-09-08",
+    project: "Portfolio",
+    type: "decision",
+    title: "Took my email address off the site",
+    summary:
+      "A published address is scraped within days. The page now carries a form, and the mailbox lives in server configuration.",
+    details: [
+      "Submits through a Server Action, so it still works with JavaScript disabled.",
+      "A honeypot field and a timing check reject the obvious bots without a captcha.",
+      "The destination address never reaches the client bundle, this repository, or a scraper reading the page.",
+    ],
+    technologies: ["Server Actions", "Resend", "TypeScript"],
+    link: "/contact",
+  },
+  {
     id: "reduced-motion-hydration",
     date: "2026-08-21",
     project: "Portfolio",
@@ -114,7 +281,6 @@ export const buildLog: BuildLogEntry[] = [
     ],
     technologies: ["Next.js", "React Three Fiber", "Motion", "TypeScript"],
     link: "/",
-    featured: true,
   },
   {
     id: "mintlytics-case-study",
@@ -198,7 +364,7 @@ export const currentlyBuilding: {
   },
   {
     name: "Portfolio",
-    focus: ["Case-study system", "Work, About & Build Log pages"],
+    focus: ["Interactive hero", "Homepage chapters", "Work archive & build log"],
     status: "Active",
   },
 ];

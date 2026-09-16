@@ -4,15 +4,20 @@ import { ArrowRight } from "lucide-react";
 
 import { BuildLogFeed } from "@/components/build-log/build-log-feed";
 import { DrawLine, Lift, MaskReveal } from "@/components/motion/reveal";
-import { buildLog, currentlyBuilding, currentlyLearning } from "@/data/build-log";
+import {
+  buildLog,
+  currentlyBuilding,
+  currentlyLearning,
+} from "@/data/build-log";
 
 /**
  * The build log — a public engineering journal / changelog.
  *
- * Server-rendered around one small client island (the filterable feed). A dark,
- * utilitarian-terminal surface with a faint oversized grid, sparse registration
- * marks and one restrained purple glow — no matrix rain, no moving tickers, no
- * particles. Every entry is real work; nothing here is fabricated.
+ * Server-rendered around one client island: the log itself, which is searched,
+ * filtered and opened entry by entry in the browser, since the dataset is tiny.
+ * A dark, utilitarian-terminal surface with a faint oversized grid and one
+ * restrained purple glow. The readings under the headline are counted from the
+ * entries — every entry is real work, and nothing here is fabricated.
  */
 
 export const metadata: Metadata = {
@@ -22,14 +27,40 @@ export const metadata: Metadata = {
   alternates: { canonical: "/build-log" },
 };
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
 export default function BuildLogPage() {
+  // Counted from the entries themselves, so the page can't claim a number the
+  // log doesn't back up.
+  const dates = buildLog.map((entry) => entry.date).sort();
+  const latest = dates[dates.length - 1].replaceAll("-", ".");
+  const readings = [
+    { value: pad(buildLog.length), label: "Entries" },
+    { value: pad(new Set(dates).size), label: "Active days" },
+    {
+      value: pad(
+        new Set(buildLog.map((entry) => entry.project).filter(Boolean)).size,
+      ),
+      label: "Projects",
+    },
+    {
+      value: pad(
+        new Set(buildLog.flatMap((entry) => entry.technologies ?? [])).size,
+      ),
+      label: "Technologies",
+    },
+  ];
+
   return (
     <main
       data-surface="dark"
       className="relative isolate overflow-x-clip bg-bg pb-[clamp(2rem,6vh,4rem)] text-fg"
     >
       {/* --- Background: faint grid + one purple glow + corner marks ----- */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+      >
         <div
           className="absolute inset-0"
           style={{
@@ -66,23 +97,41 @@ export default function BuildLogPage() {
           </MaskReveal>
         </h1>
 
-        <Lift delay={0.24} className="mt-[clamp(1.25rem,3vh,2rem)] max-w-[46rem]">
+        <Lift
+          delay={0.24}
+          className="mt-[clamp(1.25rem,3vh,2rem)] max-w-[46rem]"
+        >
           <p className="text-lead text-muted">
-            A running record of what I&rsquo;m building, fixing and learning along
-            the way.
+            A running record of what I&rsquo;m building, fixing and learning
+            along the way.
           </p>
         </Lift>
 
         <Lift
           delay={0.3}
           as="div"
-          className="mt-[clamp(1.75rem,4.5vh,2.75rem)] flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-hairline pt-5"
+          className="mt-[clamp(1.75rem,4.5vh,2.75rem)] grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-4"
         >
-          <span className="label inline-flex items-center gap-2 text-fg">
-            <span aria-hidden className="signal-dot" />
-            Status / Active
+          {readings.map((reading) => (
+            <div key={reading.label} className="bg-bg px-5 py-4">
+              <p className="font-mono text-[clamp(1.5rem,2.4vw,2.25rem)] leading-none tracking-[-0.04em] text-fg tabular-nums">
+                {reading.value}
+              </p>
+              <p className="label mt-2.5 text-faint">{reading.label}</p>
+            </div>
+          ))}
+        </Lift>
+
+        <Lift
+          delay={0.36}
+          as="p"
+          className="label mt-5 inline-flex items-center gap-2 text-fg"
+        >
+          <span aria-hidden className="signal-dot" />
+          Status / Active
+          <span className="text-faint">
+            · Updated manually · Latest {latest}
           </span>
-          <span className="label text-faint">Updated / Manually</span>
         </Lift>
       </header>
 
@@ -179,8 +228,12 @@ export default function BuildLogPage() {
         <div className="shell py-[clamp(4rem,12vh,9rem)]">
           <p className="display text-[clamp(1.9rem,6vw,4.5rem)] leading-[1.0] text-fg">
             <MaskReveal onView>Ship it.</MaskReveal>
-            <MaskReveal onView delay={0.06}>Watch it break.</MaskReveal>
-            <MaskReveal onView delay={0.12}>Learn why.</MaskReveal>
+            <MaskReveal onView delay={0.06}>
+              Watch it break.
+            </MaskReveal>
+            <MaskReveal onView delay={0.12}>
+              Learn why.
+            </MaskReveal>
             <MaskReveal onView delay={0.18}>
               <span className="text-accent">Fix it.</span>
             </MaskReveal>
