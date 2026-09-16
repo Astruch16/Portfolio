@@ -1,7 +1,15 @@
 "use client";
 
 import { ArrowRight, Check, TriangleAlert } from "lucide-react";
-import { useActionState, useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useActionState,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { sendContactMessage } from "@/app/contact/actions";
 import { sequenceTone } from "@/components/case/sequence-tones";
@@ -11,6 +19,7 @@ import { UplinkPanel, type Draft } from "@/components/contact/uplink-panel";
 import { Magnetic } from "@/components/motion/magnetic";
 import { Lift } from "@/components/motion/reveal";
 import { draftStatus, initialContactState, LIMITS } from "@/lib/contact-message";
+import { contactIntent } from "@/lib/contact-intent";
 import { uplink } from "@/lib/uplink";
 import { cn } from "@/lib/utils";
 
@@ -145,6 +154,26 @@ export function ContactForm() {
       setDraft((current) => ({ ...current, topic: topic ?? "" })),
     [],
   );
+
+  // A line from "worth writing about", further down the page, picks the option
+  // it matches and hands the cursor to the message — so recognising a reason to
+  // write is a click away from writing it.
+  const intent = useSyncExternalStore(
+    contactIntent.subscribe,
+    contactIntent.getSnapshot,
+    contactIntent.getServerSnapshot,
+  );
+  const message = useRef<HTMLTextAreaElement>(null);
+  const takenIntent = useRef(0);
+  useEffect(() => {
+    if (!intent.topic || intent.at === takenIntent.current) return;
+    takenIntent.current = intent.at;
+    const topic = intent.topic;
+    setDraft((current) => ({ ...current, topic }));
+    // After the anchor jump, so focusing doesn't fight the scroll.
+    const handoff = setTimeout(() => message.current?.focus({ preventScroll: true }), 420);
+    return () => clearTimeout(handoff);
+  }, [intent]);
 
   // React resets an uncontrolled form once its action settles, and the select
   // answers that by reporting no value at all — so a rejected submission would
@@ -361,6 +390,7 @@ export function ContactForm() {
                 }
               >
                 <textarea
+                  ref={message}
                   id={field("message")}
                   name="message"
                   required

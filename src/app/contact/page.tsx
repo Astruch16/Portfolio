@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { CarrierWave } from "@/components/contact/carrier-wave";
+import { ChannelList } from "@/components/contact/channel-list";
 import { ContactForm } from "@/components/contact/contact-form";
 import { LocalTime } from "@/components/contact/local-time";
+import { TopicShortcuts } from "@/components/contact/topic-shortcuts";
 import { StatusDot } from "@/components/layout/status-dot";
 import { DrawLine, Lift, MaskReveal } from "@/components/motion/reveal";
 import { contact, site } from "@/data/site";
@@ -134,7 +136,10 @@ export default function ContactPage() {
           </Lift>
         </div>
 
-        <div className="shell pt-[clamp(2rem,5vh,3.5rem)] pb-[clamp(3.5rem,10vh,7rem)]">
+        <div
+          id="write"
+          className="shell scroll-mt-[calc(var(--nav-h)+1.5rem)] pt-[clamp(2rem,5vh,3.5rem)] pb-[clamp(3.5rem,10vh,7rem)]"
+        >
           <Lift onView delay={0.22} className="mb-8">
             <p className="label text-faint">Write to me</p>
           </Lift>
@@ -142,99 +147,52 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* === Region 2 — light: channels + what's worth writing about ===== */}
+      {/* === Region 2 — light: channels + what's worth writing about =====
+          Both halves are lists of ways in rather than lists to read: a channel
+          row opens the account, and a line from "worth writing about" fills the
+          form above with the option it matches and puts the cursor in the
+          message. Each heading stays with its list as it scrolls. */}
       <section data-surface="light" className="relative bg-bg text-fg">
-        <div className="shell shell-grid gap-y-[clamp(3rem,7vh,4.5rem)] py-[clamp(4rem,11vh,8rem)]">
-          <div className="col-span-12 lg:col-span-5">
-            <Lift onView as="p" className="label text-muted">
-              <span className="text-accent">Elsewhere</span>
-              <span className="text-faint"> / </span>
-              Channels
-            </Lift>
-            <Lift onView delay={0.06} className="mt-6 max-w-[38ch]">
-              <p className="text-lead text-muted">
-                Email is the fastest way to reach me. These are the other places
-                the work shows up.
-              </p>
-            </Lift>
-          </div>
-
-          <ul className="col-span-12 lg:col-span-7">
-            {contact.channels.map((channel, i) => {
-              const row = (
-                <>
-                  <span className="flex items-baseline gap-4">
-                    <span className="label w-24 shrink-0 text-faint">
-                      {channel.label}
-                    </span>
-                    <span className="font-mono text-[0.9375rem] tracking-[0.02em] text-fg">
-                      {channel.handle ?? (
-                        <span className="label text-faint" title="Awaiting a confirmed account">
-                          [ handle pending ]
-                        </span>
-                      )}
-                    </span>
-                  </span>
-                  <span className="mt-2 block pl-0 font-mono text-[0.6875rem] leading-[1.7] tracking-[0.06em] text-muted uppercase sm:pl-28">
-                    {channel.note}
-                  </span>
-                </>
-              );
-
-              return (
-                <Lift
-                  key={channel.label}
-                  onView
-                  delay={0.06 + i * 0.06}
-                  as="li"
-                  className="border-t border-hairline last:border-b"
-                >
-                  {channel.href ? (
-                    <a
-                      href={channel.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group relative block py-6"
-                    >
-                      {row}
-                      <ArrowUpRight
-                        aria-hidden
-                        strokeWidth={1.5}
-                        className="absolute top-6 right-0 size-4 text-faint transition-all duration-300 ease-[var(--ease-out-expo)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-fg"
-                      />
-                    </a>
-                  ) : (
-                    <div className="block py-6">{row}</div>
-                  )}
-                </Lift>
-              );
-            })}
-          </ul>
-
-          <div className="col-span-12 lg:col-span-5">
-            <Lift onView as="p" className="label text-muted">
-              <span className="text-accent">Worth</span>
-              <span className="text-faint"> / </span>
-              Writing about
-            </Lift>
-          </div>
-
-          <ul className="col-span-12 lg:col-span-7">
-            {contact.wants.map((want, i) => (
-              <Lift
-                key={want}
-                onView
-                delay={0.06 + i * 0.06}
-                as="li"
-                className="flex gap-6 border-t border-hairline py-4 last:border-b"
-              >
-                <span className="label shrink-0 text-faint">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="text-lead text-muted">{want}</span>
+        <div className="shell shell-grid gap-y-[clamp(3.5rem,9vh,6rem)] py-[clamp(4rem,11vh,8rem)]">
+          <div className="col-span-12 lg:col-span-4">
+            <div className="lg:sticky lg:top-[calc(var(--nav-h)+2.5rem)]">
+              <Lift onView as="p" className="label text-muted">
+                <span className="text-accent">Elsewhere</span>
+                <span className="text-faint"> / </span>
+                Channels
               </Lift>
-            ))}
-          </ul>
+              <Lift onView delay={0.06} className="mt-6 max-w-[34ch]">
+                <p className="text-lead text-muted">
+                  The form is the fastest way to reach me. These are the other
+                  places the work shows up.
+                </p>
+              </Lift>
+            </div>
+          </div>
+
+          <div className="col-span-12 lg:col-span-8">
+            <ChannelList />
+          </div>
+
+          <div className="col-span-12 lg:col-span-4">
+            <div className="lg:sticky lg:top-[calc(var(--nav-h)+2.5rem)]">
+              <Lift onView as="p" className="label text-muted">
+                <span className="text-accent">Worth</span>
+                <span className="text-faint"> / </span>
+                Writing about
+              </Lift>
+              <Lift onView delay={0.06} className="mt-6 max-w-[34ch]">
+                <p className="text-lead text-muted">
+                  Pick the one that fits and it fills the form for you, back at
+                  the top of the page.
+                </p>
+              </Lift>
+            </div>
+          </div>
+
+          <div className="col-span-12 lg:col-span-8">
+            <TopicShortcuts />
+          </div>
         </div>
       </section>
 
