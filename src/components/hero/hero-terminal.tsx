@@ -76,6 +76,8 @@ const INTRO: Segment[][] = [
 /** One row of a category listing. */
 type ListRow = {
   name?: string;
+  /** The entry's position in its category, on its first line only. */
+  number?: number;
   tokens: { text: string; tone?: SnippetTone }[];
 };
 
@@ -147,9 +149,10 @@ function StackListing({ id, rows }: { id: string; rows: number }) {
     );
   }
 
-  const all: ListRow[] = category.entries.flatMap((entry) =>
+  const all: ListRow[] = category.entries.flatMap((entry, e) =>
     entry.lines.map((row, i) => ({
       name: i === 0 ? entry.name : undefined,
+      number: i === 0 ? e + 1 : undefined,
       tokens: row,
     })),
   );
@@ -160,10 +163,14 @@ function StackListing({ id, rows }: { id: string; rows: number }) {
   if (all.length > rows) {
     shown = [];
     let used = 0;
-    for (const entry of category.entries) {
+    for (const [e, entry] of category.entries.entries()) {
       if (used + entry.lines.length > rows - 1) break;
       entry.lines.forEach((row, i) =>
-        shown.push({ name: i === 0 ? entry.name : undefined, tokens: row }),
+        shown.push({
+          name: i === 0 ? entry.name : undefined,
+          number: i === 0 ? e + 1 : undefined,
+          tokens: row,
+        }),
       );
       used += entry.lines.length;
     }
@@ -178,7 +185,12 @@ function StackListing({ id, rows }: { id: string; rows: number }) {
           className="term-line flex whitespace-pre"
           style={{ animationDelay: `${i * 35}ms` }}
         >
-          <span className="w-[15ch] shrink-0 truncate text-[0.625rem] sm:w-[18ch] tracking-[0.1em] text-fg uppercase">
+          {/* Numbered like the roomier layout, so a tab reads the same
+              whichever one the height allows. */}
+          <span className="w-9 shrink-0 text-[0.625rem] tracking-[0.1em] text-faint tabular-nums">
+            {row.number ? String(row.number).padStart(2, "0") : ""}
+          </span>
+          <span className="w-[15ch] shrink-0 truncate text-[0.625rem] tracking-[0.1em] text-fg uppercase sm:w-[18ch]">
             {row.name ?? ""}
           </span>
           <span className="truncate">{tokens(row.tokens)}</span>
