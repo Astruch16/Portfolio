@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 };
 
 export default function ContactPage() {
-  const latest = [...buildLog].sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+  const latest = [...buildLog].sort((a, b) => b.date.localeCompare(a.date))[0];
 
   return (
     <main className="relative">
