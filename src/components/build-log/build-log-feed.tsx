@@ -317,7 +317,7 @@ function Chip({
 
 export function BuildLogFeed({ entries }: { entries: BuildLogEntry[] }) {
   const sorted = useMemo(
-    () => [...entries].sort((a, b) => (a.date < b.date ? 1 : -1)),
+    () => [...entries].sort((a, b) => b.date.localeCompare(a.date)),
     [entries],
   );
 

@@ -40,6 +40,104 @@ export type BuildLogEntry = {
 
 export const buildLog: BuildLogEntry[] = [
   {
+    id: "terminal-numbering",
+    date: "2026-09-21",
+    project: "Portfolio",
+    type: "fix",
+    title: "The one tab that lost its numbers",
+    summary:
+      "Every stack tab in the hero terminal was numbered — until the infrastructure tab grew past the point where the numbered layout fits.",
+    details: [
+      "The terminal lays a tab out for the rows the hero leaves it: numbered headings when there's room, a compact table when there isn't.",
+      "The table carried no numbers, so a ten-entry tab always read differently from the rest.",
+      "The table now numbers each entry on its first line too, so a tab reads the same whichever layout the height allows.",
+    ],
+    technologies: ["React", "TypeScript"],
+    link: "/",
+  },
+  {
+    id: "stack-lists",
+    date: "2026-09-21",
+    project: "Portfolio",
+    type: "decision",
+    title: "Stack lists that name languages and platforms, not libraries",
+    summary:
+      "shadcn/ui came out of every stack list on the site, and the languages, platforms and infrastructure I work with went in.",
+    details: [
+      "shadcn/ui is a component library — it doesn't sit beside a language or a platform — so it left the hero terminal, the about toolkit, Expird's stack and two case studies.",
+      "Python joins the backend; Redis sits with the databases.",
+      "AWS, Google Cloud, Azure, Cloudflare, Docker and Kubernetes join the infrastructure tab, each with a line of the command it's used through.",
+      "None of them was added to a project's stack: the lists say what I use, the projects say what each one is built with.",
+    ],
+    technologies: ["Python", "Redis", "AWS", "Google Cloud", "Azure", "Cloudflare", "Docker", "Kubernetes"],
+    link: "/about",
+  },
+  {
+    id: "contact-closing-band",
+    date: "2026-09-21",
+    project: "Portfolio",
+    type: "build",
+    title: "Closed the contact page on something to look at",
+    summary:
+      "Four small readings and two buttons in a band that was mostly space became tiles and two panels that say what's behind them.",
+    details: [
+      "Status, place, local time and reply time set as tiles at a size worth reading.",
+      "The two ways on show what they lead to — every project by name, and the latest build log entry.",
+      "Both are counted from the data, so neither can go stale when a project or an entry is added.",
+    ],
+    technologies: ["Next.js", "Tailwind CSS"],
+    link: "/contact",
+  },
+  {
+    id: "about-hero-contrast",
+    date: "2026-09-21",
+    project: "Portfolio",
+    type: "fix",
+    title: "Clear ground for the about page's headline",
+    summary:
+      "The contour map behind the opening is drawn in code symbols about the size of the small type — and under the headline, it read straight through it.",
+    details: [
+      "A soft pool of the page's own ground now sits behind the headline block, so the map thins out under the words rather than behind a panel.",
+      "The lead and the margin note step up a tone.",
+      "The headline lost its full stop.",
+    ],
+    technologies: ["CSS"],
+    link: "/about",
+  },
+  {
+    id: "site-footer",
+    date: "2026-09-16",
+    project: "Portfolio",
+    type: "build",
+    title: "Gave every page a footer",
+    summary:
+      "Only the homepage had one; every other page simply stopped. It now closes the whole site from the root layout.",
+    details: [
+      "Every page, every project and the confirmed channel one press away, with the current page marked.",
+      "Status, place and local time, for anyone about to write.",
+      "The monogram runs the width of the page as an outline and fills with light wherever the pointer passes, driven by CSS variables rather than React state.",
+      "The invitation to get in touch steps aside on the two pages that already end on one.",
+    ],
+    technologies: ["Next.js", "CSS masks", "Motion"],
+    link: "/",
+  },
+  {
+    id: "build-log-redesign",
+    date: "2026-09-15",
+    project: "Portfolio",
+    type: "build",
+    title: "Made this log something to read through",
+    summary:
+      "Every entry printed in full, one after another. Now each collapses to its headline, and the log can be searched, filtered, or reached a day at a time.",
+    details: [
+      "An activity strip draws a cell for every day from the entries' own dates, lit in the colour of what was done, and jumps to the day pressed.",
+      "Search across titles, summaries, details and technologies, with the slash key to focus it from anywhere on the page.",
+      "Each entry opens in place, with a real disclosure button, so the keyboard gets the same log the pointer does.",
+    ],
+    technologies: ["React", "Motion", "TypeScript"],
+    link: "/build-log",
+  },
+  {
     id: "work-archive",
     date: "2026-09-15",
     project: "Portfolio",

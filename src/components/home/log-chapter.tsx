@@ -28,7 +28,7 @@ export function LogChapter() {
   const { scrollYProgress } = useScroll({ target: timeline, offset: ["start 70%", "end 55%"] });
   const fill = useSpring(scrollYProgress, { stiffness: 140, damping: 30, restDelta: 0.001 });
 
-  const sorted = [...buildLog].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const sorted = [...buildLog].sort((a, b) => b.date.localeCompare(a.date));
   const latest = sorted.slice(0, SHOWN);
   const tally = (Object.keys(TYPE_META) as BuildLogType[])
     .map((type) => ({ type, count: buildLog.filter((e) => e.type === type).length }))
