@@ -114,7 +114,20 @@ export function AboutHero() {
 
         {/* --- Headline ------------------------------------------------ */}
         <div className="flex flex-1 items-center py-[clamp(2rem,6vh,4.5rem)]">
-          <div>
+          <div className="relative isolate">
+            {/* A pool of the page's own ground behind the headline and the
+                lines under it. The map runs at full strength everywhere else,
+                but under the text its symbols were the same size and weight as
+                the small type and read straight through it. Soft-edged, so it
+                reads as the map thinning out rather than as a panel. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -inset-x-[12%] -inset-y-[22%] -z-10"
+              style={{
+                background:
+                  "radial-gradient(ellipse 58% 60% at 42% 52%, rgb(11 11 11 / 0.94) 0%, rgb(11 11 11 / 0.82) 42%, rgb(11 11 11 / 0.4) 68%, transparent 88%)",
+              }}
+            />
             <h1 className="display text-[clamp(3rem,8.2vw,7.75rem)] leading-[0.86] text-fg">
               {about.headline.map((line, i) => (
                 <MaskReveal key={line} delay={0.12 + i * 0.1}>
@@ -125,7 +138,7 @@ export function AboutHero() {
 
             <div className="mt-[clamp(1.75rem,4.5vh,3rem)] flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-12">
               <Lift delay={0.34} className="max-w-[44ch]">
-                <p className="text-[clamp(1.2rem,1.7vw,1.5rem)] leading-[1.4] text-muted">{about.lead}</p>
+                <p className="text-[clamp(1.2rem,1.7vw,1.5rem)] leading-[1.4] text-fg/85">{about.lead}</p>
               </Lift>
 
               {/* The margin note: where the story actually began. */}
@@ -137,7 +150,7 @@ export function AboutHero() {
                   style={{ borderColor: sequenceToneLight(0, ACCENT) }}
                 >
                   <span>
-                    <span className="label block text-faint">Where it started</span>
+                    <span className="label block text-muted">Where it started</span>
                     <span className="label mt-2 flex items-baseline gap-2.5">
                       <span style={{ color: sequenceToneLight(0, ACCENT) }}>{pad(0)}</span>
                       <span className="text-fg transition-colors group-hover/note:text-accent">

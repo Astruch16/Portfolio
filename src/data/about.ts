@@ -10,7 +10,7 @@
 export const about = {
   eyebrow: "About",
   /** Set as the opening statement; each line is its own masked reveal. */
-  headline: ["I didn’t start", "in software."],
+  headline: ["I didn’t start", "in software"],
   lead: "I got here by building things I needed.",
 
   /**
