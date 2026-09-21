@@ -145,6 +145,8 @@ export const about = {
     "Docker",
     "Kubernetes",
     "Git",
+    "ESLint",
+    "Prettier",
   ],
 
   process: [
