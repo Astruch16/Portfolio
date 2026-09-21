@@ -20,7 +20,7 @@ export default function NotFound() {
           <h1 className="display text-section">
             Nothing
             <br />
-            here yet.
+            here yet
           </h1>
           <DrawLine className="mt-10 mb-6" />
           <Link
