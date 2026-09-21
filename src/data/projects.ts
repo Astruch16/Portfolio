@@ -91,10 +91,10 @@ export const projects: Project[] = [
     discipline: "Real Estate Intelligence / Agent Productivity",
     statement:
       "Real estate software for discovering, tracking and converting expired listing opportunities.",
-    // The eight names are Adam's; which layer each sits in is a reading of
+    // The names are Adam's; which layer each sits in is a reading of
     // what the tool does, so move any of them if a line lands wrong.
     stack: {
-      frontend: ["Next.js", "React", "TypeScript", "shadcn/ui"],
+      frontend: ["Next.js", "React", "TypeScript"],
       backend: ["Neon", "Prisma", "Clerk"],
       infrastructure: ["Vercel"],
     },

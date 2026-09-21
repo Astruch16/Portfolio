@@ -57,10 +57,6 @@ export const stackCategories: StackCategory[] = [
         lines: [[{ text: "<Row " }, kw("className"), { text: '="border-b py-6" />' }]],
       },
       {
-        name: "shadcn/ui",
-        lines: [[{ text: "<Dialog.Content " }, kw("asChild"), { text: " />" }]],
-      },
-      {
         name: "Motion",
         lines: [[{ text: "<motion.div " }, kw("animate"), { text: "={{ opacity: 1 }} />" }]],
       },
@@ -71,6 +67,10 @@ export const stackCategories: StackCategory[] = [
     label: "Backend",
     path: "~/stack/backend",
     entries: [
+      {
+        name: "Python",
+        lines: [[kw("def "), { text: "clean(rows: list[dict]) -> list[dict]:" }]],
+      },
       {
         name: "Node.js",
         lines: [[kw("export async function "), { text: "GET() {}" }]],
