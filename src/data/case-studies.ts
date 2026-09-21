@@ -324,7 +324,7 @@ export const caseStudies: Record<string, CaseStudy> = {
           {
             type: "paragraphs",
             items: [
-              "Expird is built with Next.js, React, TypeScript, Neon, Prisma, Clerk, shadcn/ui and Vercel.",
+              "Expird is built with Next.js, React, TypeScript, Neon, Prisma, Clerk and Vercel.",
               "The application handles authentication, user-specific listing data, CSV ingestion, property management, follow-up workflows, notes, mapping and performance tracking.",
               "One of my biggest technical learning curves was building the data layer with Prisma and Neon. It was my first project using Neon and my first time connecting the database architecture through Prisma at this scale. Building Expird forced me to think beyond individual UI components and understand how data moves through an entire application.",
             ],
@@ -1446,7 +1446,7 @@ export const caseStudies: Record<string, CaseStudy> = {
           {
             type: "paragraphs",
             items: [
-              "Mintlytics is a Next.js and React 19 app in TypeScript on Node 20, with Prisma over PostgreSQL on Neon, NextAuth for auth, and Tailwind, shadcn/ui and Recharts on the front. It runs on Vercel, with scheduled work on Vercel Cron guarded by wall-clock limits and a start/end log-event pattern for observability.",
+              "Mintlytics is a Next.js and React 19 app in TypeScript on Node 20, with Prisma over PostgreSQL on Neon, NextAuth for auth, and Tailwind and Recharts on the front. It runs on Vercel, with scheduled work on Vercel Cron guarded by wall-clock limits and a start/end log-event pattern for observability.",
               "The data comes from several external systems — TCGPro through RapidAPI (capped near 2,400 calls a day), the PokémonTCG.io catalog for cards and images, the eBay Browse API for the sniper feed, the Reddit API for mentions, and ScrapingBee for Pokémon Center monitoring.",
             ],
           },
@@ -1458,7 +1458,7 @@ export const caseStudies: Record<string, CaseStudy> = {
               { label: "Data", items: ["Prisma 7", "PostgreSQL / Neon"] },
               {
                 label: "UI",
-                items: ["Tailwind CSS v4", "shadcn/ui", "Recharts", "lucide-react"],
+                items: ["Tailwind CSS v4", "Recharts", "lucide-react"],
               },
               { label: "Auth", items: ["NextAuth"] },
               {
