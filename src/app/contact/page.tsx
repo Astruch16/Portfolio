@@ -79,7 +79,7 @@ export default function ContactPage() {
           <h1 className="display mt-[clamp(1.25rem,3.5vh,2.25rem)] text-[clamp(2.5rem,7.4vw,5.5rem)] leading-[0.92]">
             <MaskReveal onView>Tell me what</MaskReveal>
             <MaskReveal onView delay={0.08}>
-              you&rsquo;re building.
+              you&rsquo;re building
             </MaskReveal>
           </h1>
 

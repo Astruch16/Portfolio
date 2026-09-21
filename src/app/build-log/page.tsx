@@ -93,7 +93,7 @@ export default function BuildLogPage() {
           <MaskReveal delay={0.09}>Breaking.</MaskReveal>
           <MaskReveal delay={0.14}>Learning.</MaskReveal>
           <MaskReveal delay={0.19}>
-            <span className="text-accent">Shipping.</span>
+            <span className="text-accent">Shipping</span>
           </MaskReveal>
         </h1>
 

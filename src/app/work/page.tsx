@@ -93,7 +93,7 @@ export default function WorkPage() {
 
           <h1 className="display mt-[clamp(1.25rem,3.5vh,2.25rem)] text-section">
             <MaskReveal delay={0.06}>Selected</MaskReveal>
-            <MaskReveal delay={0.12}>Projects.</MaskReveal>
+            <MaskReveal delay={0.12}>Projects</MaskReveal>
           </h1>
 
           <Lift

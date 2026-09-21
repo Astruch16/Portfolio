@@ -7,7 +7,7 @@ import { sculpture } from "@/lib/sculpture-state";
 import { cn } from "@/lib/utils";
 
 /**
- * The statement, as one live line: I [verb] it.
+ * The statement, as one live line: I [verb] it
  *
  * It used to be three fixed lines stacked on a spine — design, build, ship —
  * which said the thing once and then sat there. Now the verb is whatever the
@@ -38,7 +38,7 @@ function Verb({ word, animate }: { word: string; animate: boolean }) {
   const shown = useRef(word);
 
   // The slot is as wide as the word it's resolving to, and eases between
-  // widths, so "it." glides to the new word instead of jumping — and never sits
+  // widths, so "it" glides to the new word instead of jumping — and never sits
   // stranded after a short verb in a slot sized for the longest one.
   useEffect(() => {
     const el = slot.current;
@@ -153,7 +153,7 @@ export function HeroStatement({
           visible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
         )}
       >
-        I <Verb word={FORMS[state.form]} animate={animate} /> it.
+        I <Verb word={FORMS[state.form]} animate={animate} /> it
       </p>
 
       <ol
