@@ -146,6 +146,14 @@ export const stackCategories: StackCategory[] = [
         lines: [[{ text: "tsc --noEmit && vitest run" }]],
       },
       {
+        name: "ESLint",
+        lines: [[{ text: "eslint . " }, kw("--max-warnings"), { text: " 0" }]],
+      },
+      {
+        name: "Prettier",
+        lines: [[{ text: "prettier " }, kw("--check"), { text: " ." }]],
+      },
+      {
         name: "Environments",
         lines: [[{ text: "loadEnv(" }, ok('".env.local"'), { text: ")" }]],
       },
