@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 import { CarrierWave } from "@/components/contact/carrier-wave";
 import { ChannelList } from "@/components/contact/channel-list";
@@ -9,6 +9,8 @@ import { LocalTime } from "@/components/contact/local-time";
 import { TopicShortcuts } from "@/components/contact/topic-shortcuts";
 import { StatusDot } from "@/components/layout/status-dot";
 import { DrawLine, Lift, MaskReveal } from "@/components/motion/reveal";
+import { buildLog } from "@/data/build-log";
+import { projects } from "@/data/projects";
 import { contact, site } from "@/data/site";
 
 /**
@@ -32,36 +34,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
-/** A reading in the details rail: tiny indexed label, then the value. */
-function Detail({
-  index,
-  label,
-  children,
-  note,
-}: {
-  index: string;
-  label: string;
-  children: React.ReactNode;
-  note?: string;
-}) {
-  return (
-    <div className="border-t border-hairline pt-4">
-      <p className="label text-faint">
-        {index} <span className="text-faint/60">/</span> {label}
-      </p>
-      <p className="mt-3 font-mono text-[0.875rem] leading-[1.4] font-medium tracking-[0.02em] text-fg uppercase">
-        {children}
-      </p>
-      {note ? (
-        <p className="mt-1.5 font-mono text-[0.6875rem] tracking-[0.1em] text-muted uppercase">
-          {note}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
 export default function ContactPage() {
+  const latest = [...buildLog].sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+
   return (
     <main className="relative">
       {/* === Region 1 — dark: the ask + the address ====================== */}
@@ -71,7 +46,10 @@ export default function ContactPage() {
       >
         {/* Same background construction as the build log: a faint grid, one
             restrained glow. No particles, no moving anything. */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+        >
           <div
             className="absolute inset-0"
             style={{
@@ -100,10 +78,16 @@ export default function ContactPage() {
 
           <h1 className="display mt-[clamp(1.25rem,3.5vh,2.25rem)] text-[clamp(2.5rem,7.4vw,5.5rem)] leading-[0.92]">
             <MaskReveal onView>Tell me what</MaskReveal>
-            <MaskReveal onView delay={0.08}>you&rsquo;re building.</MaskReveal>
+            <MaskReveal onView delay={0.08}>
+              you&rsquo;re building.
+            </MaskReveal>
           </h1>
 
-          <Lift onView delay={0.16} className="mt-[clamp(1.5rem,4vh,2.5rem)] max-w-[54ch]">
+          <Lift
+            onView
+            delay={0.16}
+            className="mt-[clamp(1.5rem,4vh,2.5rem)] max-w-[54ch]"
+          >
             <p className="text-lead text-muted">
               Whether it&rsquo;s a role, a product that needs building or
               something you&rsquo;re still working out — I read everything, and
@@ -196,64 +180,163 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* === Region 3 — dark: the details rail + a way back ============== */}
+      {/* === Region 3 — dark: before you write, and where else to look =====
+          It was four small readings and two buttons in a band mostly made of
+          space. Now the readings are tiles set at a size worth reading, and
+          the two ways on are panels that say what's behind them — counted
+          from the data, so neither can go stale. */}
       <section
         data-surface="dark"
-        className="relative overflow-x-clip bg-bg pb-[clamp(3rem,10vh,7rem)] text-fg"
+        className="relative overflow-x-clip bg-bg text-fg"
       >
         <DrawLine onView className="absolute inset-x-0 top-0" />
 
-        <div className="shell py-[clamp(3.5rem,10vh,7rem)]">
-          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-            <Lift onView>
-              <Detail index="01" label="Status" note={site.status.detail}>
-                <span className="inline-flex items-center gap-2.5">
-                  <StatusDot />
-                  {site.status.open}
-                </span>
-              </Detail>
+        <div className="shell grid gap-x-[clamp(2rem,4vw,4.5rem)] gap-y-12 py-[clamp(3.5rem,9vh,6rem)] lg:grid-cols-12">
+          {/* --- The readings ------------------------------------------- */}
+          <div className="lg:col-span-5">
+            <Lift onView as="p" className="label text-muted">
+              <span className="text-accent">Details</span>
+              <span className="text-faint"> / </span>
+              Before you write
             </Lift>
-            <Lift onView delay={0.06}>
-              <Detail index="02" label="Based" note={site.location.region}>
-                {site.location.city}
-              </Detail>
-            </Lift>
-            <Lift onView delay={0.12}>
-              <Detail index="03" label="Time" note="Pacific">
-                <LocalTime timezone={contact.timezone} />
-              </Detail>
-            </Lift>
-            <Lift onView delay={0.18}>
-              <Detail index="04" label="Reply" note="Usually sooner">
-                Within a few days
-              </Detail>
+
+            <Lift
+              onView
+              delay={0.06}
+              className="mt-6 grid grid-cols-2 gap-px border border-hairline bg-hairline"
+            >
+              {[
+                {
+                  label: "Status",
+                  value: (
+                    <span className="inline-flex items-center gap-2.5">
+                      <StatusDot />
+                      {site.status.available}
+                    </span>
+                  ),
+                  note: site.status.detail,
+                },
+                {
+                  label: "Based",
+                  value: site.location.city,
+                  note: site.location.region,
+                },
+                {
+                  label: "Local time",
+                  value: <LocalTime timezone={contact.timezone} />,
+                  note: "Pacific",
+                },
+                {
+                  label: "Reply",
+                  value: "Within a few days",
+                  note: "Usually sooner",
+                },
+              ].map((tile, i) => (
+                <div key={tile.label} className="bg-bg p-5 sm:p-6">
+                  <p className="label text-faint">
+                    {String(i + 1).padStart(2, "0")}
+                    <span className="text-faint/60"> / </span>
+                    {tile.label}
+                  </p>
+                  <p className="mt-4 font-mono text-[clamp(0.95rem,1.4vw,1.25rem)] leading-[1.2] font-medium tracking-[0.01em] text-fg uppercase tabular-nums">
+                    {tile.value}
+                  </p>
+                  <p className="label mt-2 text-muted">{tile.note}</p>
+                </div>
+              ))}
             </Lift>
           </div>
 
-          <Lift onView delay={0.24} className="mt-[clamp(3rem,8vh,5rem)] flex flex-wrap gap-4">
-            <Link
-              href="/work"
-              className="group/w label inline-flex items-center gap-3 bg-fg px-6 py-3.5 text-bg transition-transform duration-300 ease-[var(--ease-out-expo)] hover:-translate-y-0.5"
-            >
-              See the work first
-              <ArrowRight
-                aria-hidden
-                strokeWidth={1.5}
-                className="size-3.5 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover/w:translate-x-1"
-              />
-            </Link>
-            <Link
-              href="/build-log"
-              className="group/b label inline-flex items-center gap-3 border border-hairline-strong px-6 py-3.5 text-fg transition-colors hover:bg-fg hover:text-bg"
-            >
-              Read the build log
-              <ArrowRight
-                aria-hidden
-                strokeWidth={1.5}
-                className="size-3.5 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover/b:translate-x-1"
-              />
-            </Link>
-          </Lift>
+          {/* --- The ways on -------------------------------------------- */}
+          <div className="lg:col-span-7">
+            <Lift onView as="p" className="label text-muted">
+              <span className="text-accent">Or</span>
+              <span className="text-faint"> / </span>
+              Look around first
+            </Lift>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <Lift onView delay={0.1}>
+                <Link
+                  href="/work"
+                  className="group/way relative isolate flex h-full min-h-[15rem] flex-col justify-between overflow-hidden border border-hairline-strong p-6 transition-colors duration-500 hover:border-accent sm:p-7"
+                >
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 -z-10 origin-bottom scale-y-0 bg-[linear-gradient(to_top,rgb(114_87_255/0.16),transparent)] transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover/way:scale-y-100"
+                  />
+                  <span className="flex items-baseline justify-between gap-4">
+                    <span className="label text-faint">The work</span>
+                    <ArrowUpRight
+                      aria-hidden
+                      strokeWidth={1.5}
+                      className="size-4 text-muted transition-all duration-300 ease-[var(--ease-out-expo)] group-hover/way:-translate-y-0.5 group-hover/way:translate-x-0.5 group-hover/way:text-fg"
+                    />
+                  </span>
+                  <span>
+                    <span className="block font-mono text-[clamp(2.5rem,4.5vw,3.75rem)] leading-none tracking-[-0.04em] text-fg tabular-nums">
+                      {String(projects.length).padStart(2, "0")}
+                    </span>
+                    <span className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
+                      {projects.map((project) => (
+                        <span
+                          key={project.slug}
+                          className="label inline-flex items-center gap-1.5 text-muted"
+                        >
+                          <span
+                            aria-hidden
+                            className="block size-1.5 rounded-full"
+                            style={{ backgroundColor: project.accent }}
+                          />
+                          {project.name}
+                        </span>
+                      ))}
+                    </span>
+                    <span className="display mt-6 block text-[clamp(1.5rem,2.4vw,2rem)] leading-none text-fg transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover/way:translate-x-1">
+                      See the work first
+                    </span>
+                  </span>
+                </Link>
+              </Lift>
+
+              <Lift onView delay={0.16}>
+                <Link
+                  href="/build-log"
+                  className="group/way relative isolate flex h-full min-h-[15rem] flex-col justify-between overflow-hidden border border-hairline-strong p-6 transition-colors duration-500 hover:border-accent sm:p-7"
+                >
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 -z-10 origin-bottom scale-y-0 bg-[linear-gradient(to_top,rgb(182_229_59/0.1),transparent)] transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover/way:scale-y-100"
+                  />
+                  <span className="flex items-baseline justify-between gap-4">
+                    <span className="label text-faint">The build log</span>
+                    <ArrowUpRight
+                      aria-hidden
+                      strokeWidth={1.5}
+                      className="size-4 text-muted transition-all duration-300 ease-[var(--ease-out-expo)] group-hover/way:-translate-y-0.5 group-hover/way:translate-x-0.5 group-hover/way:text-fg"
+                    />
+                  </span>
+                  <span>
+                    <span className="block font-mono text-[clamp(2.5rem,4.5vw,3.75rem)] leading-none tracking-[-0.04em] text-fg tabular-nums">
+                      {String(buildLog.length).padStart(2, "0")}
+                    </span>
+                    <span className="label mt-3 block text-faint">
+                      Latest{" "}
+                      <span className="text-muted tabular-nums">
+                        {latest.date.replaceAll("-", ".")}
+                      </span>
+                    </span>
+                    <span className="mt-1.5 line-clamp-2 block text-muted">
+                      {latest.title}
+                    </span>
+                    <span className="display mt-6 block text-[clamp(1.5rem,2.4vw,2rem)] leading-none text-fg transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover/way:translate-x-1">
+                      Read the build log
+                    </span>
+                  </span>
+                </Link>
+              </Lift>
+            </div>
+          </div>
         </div>
       </section>
     </main>
