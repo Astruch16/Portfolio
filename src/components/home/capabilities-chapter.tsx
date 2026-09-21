@@ -328,8 +328,9 @@ export function CapabilitiesChapter() {
           aria-hidden
           className="mt-8 flex flex-col gap-[clamp(0.75rem,2vh,1.5rem)]"
         >
-          <Band items={about.toolkit.slice(0, 6)} />
-          <Band items={about.toolkit.slice(6)} reverse />
+          {/* Split down the middle, so the two bands stay even as the list grows. */}
+          <Band items={about.toolkit.slice(0, Math.ceil(about.toolkit.length / 2))} />
+          <Band items={about.toolkit.slice(Math.ceil(about.toolkit.length / 2))} reverse />
         </div>
       </div>
     </section>

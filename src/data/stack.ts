@@ -90,6 +90,10 @@ export const stackCategories: StackCategory[] = [
         ],
       },
       {
+        name: "Redis",
+        lines: [[kw("await "), { text: "redis.set(key, val, { ex: 60 })" }]],
+      },
+      {
         name: "Server Actions",
         lines: [[{ text: '"use server"' }, { text: " — mutate, then " }, kw("revalidate")]],
       },
@@ -108,6 +112,30 @@ export const stackCategories: StackCategory[] = [
       {
         name: "Vercel",
         lines: [[{ text: "vercel deploy " }, kw("--prod")]],
+      },
+      {
+        name: "AWS",
+        lines: [[{ text: "aws s3 sync ./out " }, ok("s3://site")]],
+      },
+      {
+        name: "Google Cloud",
+        lines: [[{ text: "gcloud run deploy " }, kw("api")]],
+      },
+      {
+        name: "Azure",
+        lines: [[{ text: "az webapp up " }, kw("--name"), { text: " api" }]],
+      },
+      {
+        name: "Cloudflare",
+        lines: [[{ text: "wrangler deploy " }, kw("--env"), { text: " prod" }]],
+      },
+      {
+        name: "Docker",
+        lines: [[{ text: "docker build " }, kw("-t"), { text: " app ." }]],
+      },
+      {
+        name: "Kubernetes",
+        lines: [[{ text: "kubectl apply " }, kw("-f"), { text: " deploy.yaml" }]],
       },
       {
         name: "Git",
