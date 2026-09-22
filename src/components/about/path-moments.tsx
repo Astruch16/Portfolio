@@ -64,7 +64,7 @@ function MomentItem({
   const dotFill = useTransform(reveal, (v) => (v > 0.02 ? tone : "var(--surface-bg)"));
 
   return (
-    <li className="relative w-[78%] shrink-0 snap-start pt-9 sm:w-auto sm:shrink">
+    <li className="relative pt-9">
       <motion.span
         aria-hidden
         className="absolute top-0 left-0 block size-3 rounded-full border"
@@ -164,14 +164,7 @@ export function PathMoments({
         style={{ backgroundColor: tone, scaleX: still ? 1 : scrollYProgress }}
       />
 
-      {/* A column of full-width plates put three of these under every chapter
-          and made the page twice as long as it needed to be on a phone. They
-          swipe instead, and bleed to the edge so the next one is always showing
-          itself. */}
-      <ol
-        ref={strip}
-        className="relative -mx-(--gutter) flex snap-x snap-mandatory gap-5 overflow-x-auto px-(--gutter) pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-x-6 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
-      >
+      <ol ref={strip} className="relative grid gap-x-6 gap-y-12 sm:grid-cols-3">
         {moments.map((moment, i) => (
           <MomentItem
             key={i}

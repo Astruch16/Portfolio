@@ -1,8 +1,11 @@
 "use client";
 
-import { ArrowDown } from "lucide-react";
-import { motion } from "motion/react";
+import { useRef } from "react";
 
+import { ArrowDown } from "lucide-react";
+import { motion, useScroll, useTransform } from "motion/react";
+
+import { RouteStrip } from "@/components/about/route-strip";
 import { SymbolTopography } from "@/components/about/symbol-topography";
 import { sequenceToneLight } from "@/components/case/sequence-tones";
 import { StatusDot } from "@/components/layout/status-dot";
@@ -36,26 +39,54 @@ const ACCENT = "var(--color-accent)";
 const pad = (i: number) => String(i + 1).padStart(2, "0");
 
 /** Scrolls to a chapter of the story, centred so the sticky nav never covers it. */
-function goToChapter(event: React.MouseEvent<HTMLAnchorElement>, chapter: number) {
+function goToChapter(
+  event: React.MouseEvent<HTMLAnchorElement>,
+  chapter: number,
+) {
   const target = document.getElementById(`path-chapter-${chapter}`);
   if (!target) return;
   event.preventDefault();
   const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  target.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "center" });
+  target.scrollIntoView({
+    behavior: still ? "auto" : "smooth",
+    block: "center",
+  });
 }
 
 export function AboutHero() {
   const { stops, beats } = about.path;
-  const chapterOf = (stop: number) => beats.findIndex((beat) => (beat.stops as readonly number[]).includes(stop));
+  const section = useRef<HTMLElement>(null);
+
+  // The ground drifts against the type as the opening leaves: the map travels
+  // slower than the page and the route sinks a little faster, which is the
+  // depth the pointer gives this hero on a desktop and nothing gave it on a
+  // phone. Transform only, so it costs no layout.
+  const { scrollYProgress } = useScroll({
+    target: section,
+    offset: ["start start", "end start"],
+  });
+  const groundY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
+  const typeY = useTransform(scrollYProgress, [0, 1], [0, -40]);
+  const routeY = useTransform(scrollYProgress, [0, 1], [0, 26]);
+  const fade = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+  const chapterOf = (stop: number) =>
+    beats.findIndex((beat) => (beat.stops as readonly number[]).includes(stop));
 
   const readouts = [
     { label: "Based", value: site.location.city, note: site.location.region },
     { label: "Role", value: site.role, note: null },
-    { label: "Status", value: site.status.available, note: site.status.detail, live: true },
+    {
+      label: "Status",
+      value: site.status.available,
+      note: site.status.detail,
+      live: true,
+    },
   ];
 
   return (
     <section
+      ref={section}
       data-surface="dark"
       className="relative isolate overflow-hidden bg-bg text-fg"
     >
@@ -68,18 +99,23 @@ export function AboutHero() {
             tall column and more small type sits over the map at once — but not
             so soft that the ground disappears: the headline carries its own
             scrim, and the readouts and route have the mask's eased bands. */}
-        <div
+        <motion.div
           className="absolute inset-0 opacity-[0.72] lg:opacity-100"
           style={{
+            y: groundY,
             maskImage:
               "linear-gradient(to bottom, rgb(0 0 0 / 0.22) 0%, rgb(0 0 0 / 0.5) 20%, #000 36%, #000 64%, rgb(0 0 0 / 0.42) 100%)",
           }}
         >
           <SymbolTopography />
-        </div>
-        <div
+        </motion.div>
+        <motion.div
+          style={{
+            y: glowY,
+            background:
+              "radial-gradient(circle, rgb(114 87 255 / 0.3) 0%, transparent 70%)",
+          }}
           className="absolute top-[18%] right-[4%] h-[38rem] w-[38rem] rounded-full opacity-45 blur-[130px]"
-          style={{ background: "radial-gradient(circle, rgb(114 87 255 / 0.3) 0%, transparent 70%)" }}
         />
       </div>
 
@@ -94,7 +130,11 @@ export function AboutHero() {
 
           <dl className="grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)_minmax(0,1fr)] lg:max-w-[54rem]">
             {readouts.map((r, i) => (
-              <Lift key={r.label} delay={0.1 + i * 0.07} className={i === 1 ? "col-span-2 sm:col-span-1" : undefined}>
+              <Lift
+                key={r.label}
+                delay={0.1 + i * 0.07}
+                className={i === 1 ? "col-span-2 sm:col-span-1" : undefined}
+              >
                 <dt className="label text-faint">
                   {pad(i)} <span className="text-faint/60">/</span> {r.label}
                 </dt>
@@ -115,7 +155,10 @@ export function AboutHero() {
         </div>
 
         {/* --- Headline ------------------------------------------------ */}
-        <div className="flex flex-1 items-center py-[clamp(1.5rem,6vh,4.5rem)]">
+        <motion.div
+          style={{ y: typeY, opacity: fade }}
+          className="flex flex-1 items-center py-[clamp(1.5rem,6vh,4.5rem)]"
+        >
           <div className="relative isolate">
             {/* A pool of the page's own ground behind the headline and the
                 lines under it. The map runs at full strength everywhere else,
@@ -140,7 +183,9 @@ export function AboutHero() {
 
             <div className="mt-[clamp(1.75rem,4.5vh,3rem)] flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-12">
               <Lift delay={0.34} className="max-w-[44ch]">
-                <p className="text-[clamp(1.2rem,1.7vw,1.5rem)] leading-[1.4] text-fg/85">{about.lead}</p>
+                <p className="text-[clamp(1.2rem,1.7vw,1.5rem)] leading-[1.4] text-fg/85">
+                  {about.lead}
+                </p>
               </Lift>
 
               {/* The margin note: where the story actually began. */}
@@ -152,9 +197,13 @@ export function AboutHero() {
                   style={{ borderColor: sequenceToneLight(0, ACCENT) }}
                 >
                   <span>
-                    <span className="label block text-muted">Where it started</span>
+                    <span className="label block text-muted">
+                      Where it started
+                    </span>
                     <span className="label mt-2 flex items-baseline gap-2.5">
-                      <span style={{ color: sequenceToneLight(0, ACCENT) }}>{pad(0)}</span>
+                      <span style={{ color: sequenceToneLight(0, ACCENT) }}>
+                        {pad(0)}
+                      </span>
                       <span className="text-fg transition-colors group-hover/note:text-accent">
                         {stops[0].label}
                       </span>
@@ -164,11 +213,10 @@ export function AboutHero() {
               </Lift>
             </div>
           </div>
-
-        </div>
+        </motion.div>
 
         {/* --- The route ------------------------------------------------- */}
-        <div>
+        <motion.div style={{ y: routeY }}>
           <div className="mb-4 flex items-baseline justify-between gap-6">
             <Lift delay={0.5} as="p" className="label text-faint">
               The route
@@ -189,63 +237,83 @@ export function AboutHero() {
             </Lift>
           </div>
 
-          <motion.ol
-            initial="hidden"
-            animate="visible"
-            variants={{ hidden: {}, visible: { transition: { delayChildren: 0.6, staggerChildren: 0.12 } } }}
-            // Five stops stacked two-up took a third of a phone's screen out
-            // of an opening that has to fit one. They run along a swipe
-            // instead, which is what a route does anyway, and bleed to the
-            // edge so the next stop is always showing itself.
-            className="relative -mx-(--gutter) flex snap-x snap-mandatory gap-x-5 overflow-x-auto px-(--gutter) pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-5 sm:gap-x-4 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
-          >
-            {/* The rail itself, drawn across as the stops arrive. */}
-            <motion.span
-              aria-hidden
-              className="absolute top-[4.5px] right-0 left-0 h-px origin-left bg-hairline-strong"
+          {/* Five stops stacked two-up took a third of a phone's screen out of
+              an opening that has to fit one. They run along a strip that
+              carries itself instead, which is what a route does anyway. */}
+          <RouteStrip className="-mx-(--gutter) overflow-x-auto px-(--gutter) pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+            <motion.ol
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
               variants={{
-                hidden: { scaleX: 0 },
-                visible: { scaleX: 1, transition: { duration: 1.4, ease: easing.outExpo, delay: 0.55 } },
+                hidden: {},
+                visible: {
+                  transition: { delayChildren: 0.6, staggerChildren: 0.12 },
+                },
               }}
-            />
+              className="relative flex w-max gap-x-5 sm:grid sm:w-auto sm:grid-cols-5 sm:gap-x-4"
+            >
+              {/* The rail itself, drawn across as the stops arrive. */}
+              <motion.span
+                aria-hidden
+                className="absolute top-[4.5px] right-0 left-0 h-px origin-left bg-hairline-strong"
+                variants={{
+                  hidden: { scaleX: 0 },
+                  visible: {
+                    scaleX: 1,
+                    transition: {
+                      duration: 1.4,
+                      ease: easing.outExpo,
+                      delay: 0.55,
+                    },
+                  },
+                }}
+              />
 
-            {stops.map((stop, i) => {
-              const tone = sequenceToneLight(i, ACCENT);
-              const chapter = chapterOf(i);
-              return (
-                <motion.li
-                  key={stop.label}
-                  variants={{
-                    hidden: { opacity: 0, y: 10 },
-                    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: easing.outQuart } },
-                  }}
-                  className="w-[47%] shrink-0 snap-start sm:w-auto sm:shrink"
-                >
-                  <a
-                    href={`#path-chapter-${chapter}`}
-                    onClick={(event) => goToChapter(event, chapter)}
-                    className="group/stop relative block pt-6"
+              {stops.map((stop, i) => {
+                const tone = sequenceToneLight(i, ACCENT);
+                const chapter = chapterOf(i);
+                return (
+                  <motion.li
+                    key={stop.label}
+                    variants={{
+                      hidden: { opacity: 0, y: 10 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: { duration: 0.55, ease: easing.outQuart },
+                      },
+                    }}
+                    className="w-[11.5rem] shrink-0 sm:w-auto sm:shrink"
                   >
-                    <span
-                      aria-hidden
-                      className="absolute top-0 block size-2.5 shrink-0 rounded-full transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover/stop:scale-150"
-                      style={{ backgroundColor: tone }}
-                    />
-                    <span className="block">
-                      <span className="label block" style={{ color: tone }}>
-                        {pad(i)}
+                    <a
+                      href={`#path-chapter-${chapter}`}
+                      onClick={(event) => goToChapter(event, chapter)}
+                      className="group/stop relative block pt-6"
+                    >
+                      <span
+                        aria-hidden
+                        className="absolute top-0 block size-2.5 shrink-0 rounded-full transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover/stop:scale-150"
+                        style={{ backgroundColor: tone }}
+                      />
+                      <span className="block">
+                        <span className="label block" style={{ color: tone }}>
+                          {pad(i)}
+                        </span>
+                        <span className="display mt-2 block text-[clamp(0.95rem,1.25vw,1.2rem)] leading-[1.05] text-fg transition-colors group-hover/stop:text-accent">
+                          {stop.label}
+                        </span>
+                        <span className="label mt-1.5 block text-faint">
+                          {stop.note}
+                        </span>
                       </span>
-                      <span className="display mt-2 block text-[clamp(0.95rem,1.25vw,1.2rem)] leading-[1.05] text-fg transition-colors group-hover/stop:text-accent">
-                        {stop.label}
-                      </span>
-                      <span className="label mt-1.5 block text-faint">{stop.note}</span>
-                    </span>
-                  </a>
-                </motion.li>
-              );
-            })}
-          </motion.ol>
-        </div>
+                    </a>
+                  </motion.li>
+                );
+              })}
+            </motion.ol>
+          </RouteStrip>
+        </motion.div>
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useInView } from "motion/react";
 
 import { FIGURE_META, PathFigure, type FigureKind } from "@/components/about/path-figures";
 import { PathMoments, type Moment } from "@/components/about/path-moments";
@@ -93,6 +94,7 @@ function Plate({
   sheet,
   sheets,
   className,
+  drawOnView = false,
 }: {
   beat: Beat;
   stops: readonly Stop[];
@@ -100,13 +102,20 @@ function Plate({
   sheet: number;
   sheets: number;
   className?: string;
+  /** Draw when the plate itself arrives rather than when its chapter is
+   *  current — which is what the reader sees where each chapter carries its
+   *  own plate at the end, far below the band that decides "current". */
+  drawOnView?: boolean;
 }) {
+  const figure = useRef<HTMLElement>(null);
+  const seen = useInView(figure, { margin: "0px 0px -18% 0px" });
+  const drawn = drawOnView ? seen : active;
   const first = beat.stops[0];
   const tone = sequenceToneLight(beat.stops[beat.stops.length - 1], ACCENT);
   const meta = FIGURE_META[beat.figure];
 
   return (
-    <figure className={className}>
+    <figure ref={figure} className={className}>
       <div className="flex items-baseline justify-between gap-4 border-b border-hairline pb-2.5">
         <p className="label min-w-0 truncate text-fg">
           <span style={{ color: sequenceToneLight(first, ACCENT) }}>
@@ -129,7 +138,7 @@ function Plate({
 
         <div className="border border-hairline-strong">
           <div className="aspect-[44/31] px-1 pt-1">
-            <PathFigure kind={beat.figure} active={active} tone={tone} />
+            <PathFigure kind={beat.figure} active={drawn} tone={tone} />
           </div>
 
           {/* Title block. Stop and scale share a row; the legend gets the full
@@ -362,10 +371,13 @@ export function PathStory({
             </p>
 
             {beat.moments?.length ? (
+              // Three photo slots per chapter, all of them still placeholders,
+              // took a phone's whole screen each and said nothing. They stay
+              // where there's a row to put them in.
               <PathMoments
                 moments={beat.moments}
                 tone={sequenceToneLight(beat.stops[beat.stops.length - 1], ACCENT)}
-                className="mt-[clamp(2.5rem,6vh,4rem)]"
+                className="mt-[clamp(2.5rem,6vh,4rem)] hidden sm:block"
               />
             ) : null}
 
@@ -374,6 +386,7 @@ export function PathStory({
               beat={beat}
               stops={stops}
               active={i === active}
+              drawOnView
               sheet={i}
               sheets={beats.length}
               className="mt-9 max-w-[32rem] lg:hidden"
