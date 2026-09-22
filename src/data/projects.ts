@@ -15,7 +15,10 @@ export type ProjectStatus =
   | "Live"
   | "Closed beta"
   | "In development"
-  | "Building";
+  | "Building"
+  /** Announced, nothing to show yet: the site says so rather than leaving
+   *  pending markers where the content will go. */
+  | "Coming soon";
 
 export type ProjectVisual =
   | "map"
@@ -153,7 +156,7 @@ export const projects: Project[] = [
     discipline: "Hospitality Software",
     statement: null,
     stack: STACK_PENDING,
-    status: null,
+    status: "Coming soon",
     accent: "#c9a227",
     visual: "property",
     layout: "left",
@@ -177,6 +180,18 @@ export const projects: Project[] = [
 /** The whole stack as one ordered run, for contexts with a single line to give. */
 export function stackList(stack: ProjectStack): string[] {
   return [...stack.frontend, ...stack.backend, ...stack.infrastructure];
+}
+
+/**
+ * Whether a project is announced but has nothing to show yet.
+ *
+ * Everywhere else a missing statement, stack or status renders as a marked
+ * placeholder — a note to Adam that real content is owed. For a project that
+ * is deliberately not public yet, that reads as an unfinished page rather than
+ * as a project still to come, so those places say "Coming soon" instead.
+ */
+export function isComingSoon(project: Project): boolean {
+  return project.status === "Coming soon";
 }
 
 export function projectBySlug(slug: string): Project | undefined {

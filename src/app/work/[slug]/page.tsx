@@ -7,7 +7,7 @@ import { CaseHero } from "@/components/case/case-hero";
 import { CaseSectionBlock } from "@/components/case/case-section";
 import { DrawLine } from "@/components/motion/reveal";
 import { caseStudyBySlug } from "@/data/case-studies";
-import { projectBySlug, projects } from "@/data/projects";
+import { isComingSoon, projectBySlug, projects } from "@/data/projects";
 
 export function generateStaticParams() {
   return projects.map((project) => ({ slug: project.slug }));
@@ -63,7 +63,20 @@ export default async function ProjectPage(props: PageProps<"/work/[slug]">) {
           <h1 className="display mt-6 text-section">{project.name}</h1>
           <p className="label mt-5 text-muted">{project.discipline}</p>
           <DrawLine className="mt-12 mb-6" />
-          <p className="label text-faint">Case study in progress</p>
+          {isComingSoon(project) ? (
+            <>
+              <p className="label inline-flex items-center gap-2.5" style={{ color: "#e0a94f" }}>
+                <span className="block size-1.5 rounded-full" style={{ backgroundColor: "#e0a94f" }} />
+                Coming soon
+              </p>
+              <p className="mt-5 max-w-[46ch] text-lead text-muted">
+                This one isn&rsquo;t public yet. When it is, its case study
+                lands here with the rest.
+              </p>
+            </>
+          ) : (
+            <p className="label text-faint">Case study in progress</p>
+          )}
           <Link
             href="/#work-heading"
             className="group label mt-10 inline-flex items-center gap-3 text-muted transition-colors hover:text-fg"

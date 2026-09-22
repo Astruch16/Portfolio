@@ -13,7 +13,7 @@ import { ArrowUpRight, LayoutGrid, Rows3 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { COMPOSITIONS } from "@/components/work/visuals";
-import type { Project } from "@/data/projects";
+import { isComingSoon, type Project } from "@/data/projects";
 import type { CaseImage } from "@/lib/case-image";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { easing } from "@/lib/motion";
@@ -255,7 +255,11 @@ function IndexRow({
             {project.discipline}
           </span>
           <span className="label mt-2 block text-faint">
-            {count ? `${count} technologies` : "[ stack pending ]"}
+            {count
+              ? `${count} technologies`
+              : isComingSoon(project)
+                ? "Not public yet"
+                : "[ stack pending ]"}
           </span>
         </span>
 
@@ -336,7 +340,10 @@ function Plate({ item, index }: { item: ArchiveItem; index: number }) {
             <span className="text-faint"> / </span>
             {project.kind}
           </p>
-          <p className="label text-faint">
+          <p
+            className={cn("label", isComingSoon(project) ? undefined : "text-faint")}
+            style={isComingSoon(project) ? { color: "#e0a94f" } : undefined}
+          >
             {project.status ?? "[ status pending ]"}
           </p>
         </div>
@@ -353,6 +360,10 @@ function Plate({ item, index }: { item: ArchiveItem; index: number }) {
         <p className="label mt-3 text-faint">{project.discipline}</p>
         {project.statement ? (
           <p className="mt-4 max-w-[46ch] text-muted">{project.statement}</p>
+        ) : isComingSoon(project) ? (
+          <p className="mt-4 max-w-[46ch] text-muted">
+            In the works &mdash; there&rsquo;ll be more to show here soon.
+          </p>
         ) : (
           <p className="label mt-4 text-faint">[ positioning pending ]</p>
         )}
