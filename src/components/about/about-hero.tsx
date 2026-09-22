@@ -64,10 +64,12 @@ export function AboutHero() {
         {/* Eased off under the nav and the readout rail at the top, and under
             the route at the bottom, so the small type in those bands stays
             easy to read. Full strength behind the headline, which can take it. */}
-        {/* Dimmer on narrow screens: the opening stacks into a tall column there,
-            so far more of the small type sits over the map at once. */}
+        {/* A little softer on narrow screens, where the opening stacks into a
+            tall column and more small type sits over the map at once — but not
+            so soft that the ground disappears: the headline carries its own
+            scrim, and the readouts and route have the mask's eased bands. */}
         <div
-          className="absolute inset-0 opacity-40 lg:opacity-100"
+          className="absolute inset-0 opacity-[0.72] lg:opacity-100"
           style={{
             maskImage:
               "linear-gradient(to bottom, rgb(0 0 0 / 0.22) 0%, rgb(0 0 0 / 0.5) 20%, #000 36%, #000 64%, rgb(0 0 0 / 0.42) 100%)",
@@ -90,9 +92,9 @@ export function AboutHero() {
             {about.eyebrow}
           </Lift>
 
-          <dl className="grid gap-x-10 gap-y-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)_minmax(0,1fr)] lg:max-w-[54rem]">
+          <dl className="grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)_minmax(0,1fr)] lg:max-w-[54rem]">
             {readouts.map((r, i) => (
-              <Lift key={r.label} delay={0.1 + i * 0.07}>
+              <Lift key={r.label} delay={0.1 + i * 0.07} className={i === 1 ? "col-span-2 sm:col-span-1" : undefined}>
                 <dt className="label text-faint">
                   {pad(i)} <span className="text-faint/60">/</span> {r.label}
                 </dt>
@@ -113,7 +115,7 @@ export function AboutHero() {
         </div>
 
         {/* --- Headline ------------------------------------------------ */}
-        <div className="flex flex-1 items-center py-[clamp(2rem,6vh,4.5rem)]">
+        <div className="flex flex-1 items-center py-[clamp(1.5rem,6vh,4.5rem)]">
           <div className="relative isolate">
             {/* A pool of the page's own ground behind the headline and the
                 lines under it. The map runs at full strength everywhere else,
@@ -191,12 +193,16 @@ export function AboutHero() {
             initial="hidden"
             animate="visible"
             variants={{ hidden: {}, visible: { transition: { delayChildren: 0.6, staggerChildren: 0.12 } } }}
-            className="relative grid gap-y-5 sm:grid-cols-5 sm:gap-x-4"
+            // Five stops stacked two-up took a third of a phone's screen out
+            // of an opening that has to fit one. They run along a swipe
+            // instead, which is what a route does anyway, and bleed to the
+            // edge so the next stop is always showing itself.
+            className="relative -mx-(--gutter) flex snap-x snap-mandatory gap-x-5 overflow-x-auto px-(--gutter) pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-5 sm:gap-x-4 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
           >
             {/* The rail itself, drawn across as the stops arrive. */}
             <motion.span
               aria-hidden
-              className="absolute top-[4.5px] right-0 left-0 hidden h-px origin-left bg-hairline-strong sm:block"
+              className="absolute top-[4.5px] right-0 left-0 h-px origin-left bg-hairline-strong"
               variants={{
                 hidden: { scaleX: 0 },
                 visible: { scaleX: 1, transition: { duration: 1.4, ease: easing.outExpo, delay: 0.55 } },
@@ -213,15 +219,16 @@ export function AboutHero() {
                     hidden: { opacity: 0, y: 10 },
                     visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: easing.outQuart } },
                   }}
+                  className="w-[47%] shrink-0 snap-start sm:w-auto sm:shrink"
                 >
                   <a
                     href={`#path-chapter-${chapter}`}
                     onClick={(event) => goToChapter(event, chapter)}
-                    className="group/stop relative flex items-start gap-3 sm:block sm:pt-6"
+                    className="group/stop relative block pt-6"
                   >
                     <span
                       aria-hidden
-                      className="relative mt-1 block size-2.5 shrink-0 rounded-full transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover/stop:scale-150 sm:absolute sm:top-0 sm:mt-0"
+                      className="absolute top-0 block size-2.5 shrink-0 rounded-full transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover/stop:scale-150"
                       style={{ backgroundColor: tone }}
                     />
                     <span className="block">

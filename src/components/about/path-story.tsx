@@ -345,7 +345,7 @@ export function PathStory({
             data-beat={i}
             data-current={i === active}
             className={cn(
-              "flex flex-col justify-center py-[clamp(3rem,8vh,5rem)] transition-opacity duration-500 ease-[var(--ease-out-quart)] lg:min-h-[52vh]",
+              "flex flex-col justify-center py-[clamp(2.25rem,8vh,5rem)] transition-opacity duration-500 ease-[var(--ease-out-quart)] lg:min-h-[52vh]",
               "lg:data-[current=false]:opacity-30",
               // The first chapter starts straight after the headline block, so
               // its kicker sits level with the top of the panel's figure
@@ -376,7 +376,7 @@ export function PathStory({
               active={i === active}
               sheet={i}
               sheets={beats.length}
-              className="mt-10 max-w-[32rem] lg:hidden"
+              className="mt-9 max-w-[32rem] lg:hidden"
             />
           </article>
         ))}
