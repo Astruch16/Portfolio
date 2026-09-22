@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Lift, MaskReveal } from "@/components/motion/reveal";
 import { COMPOSITIONS } from "@/components/work/visuals";
-import type { Project } from "@/data/projects";
+import { isComingSoon, type Project } from "@/data/projects";
 import type { CaseImage } from "@/lib/case-image";
 import { stackGroups } from "@/lib/stack-groups";
 import { cn } from "@/lib/utils";
@@ -204,11 +204,25 @@ function StatusPill({ status }: { status: Project["status"] }) {
       </span>
     );
   }
+  // Something that is running gets the live signal; something still to come
+  // gets the amber the rest of the site marks waiting with, and doesn't pulse.
+  const soon = status === "Coming soon";
   return (
-    <span className="label inline-flex items-center gap-2 border border-hairline px-2.5 py-1 text-muted">
+    <span
+      className="label inline-flex items-center gap-2 border px-2.5 py-1"
+      style={{
+        color: soon ? "#e0a94f" : "var(--surface-muted)",
+        borderColor: soon ? "#e0a94f55" : "var(--surface-hairline)",
+      }}
+    >
       <span className="relative flex size-1.5">
-        <span className="absolute inset-0 animate-ping rounded-full bg-signal opacity-60" />
-        <span className="relative block size-1.5 rounded-full bg-signal" />
+        {soon ? null : (
+          <span className="absolute inset-0 animate-ping rounded-full bg-signal opacity-60" />
+        )}
+        <span
+          className="relative block size-1.5 rounded-full"
+          style={{ backgroundColor: soon ? "#e0a94f" : "var(--color-signal)" }}
+        />
       </span>
       {status}
     </span>
@@ -257,6 +271,10 @@ function Chapter({ item, index }: { item: ShowcaseItem; index: number }) {
       <Lift onView delay={0.16} className="mt-7 max-w-[44ch]">
         {project.statement ? (
           <p className="text-lead text-muted">{project.statement}</p>
+        ) : isComingSoon(project) ? (
+          <p className="text-lead text-muted">
+            In the works &mdash; there&rsquo;ll be more to show here soon.
+          </p>
         ) : (
           <p className="label text-faint" title="Awaiting real content">
             [ Positioning statement pending ]
@@ -279,7 +297,7 @@ function Chapter({ item, index }: { item: ShowcaseItem; index: number }) {
               )),
             )}
           </ul>
-        ) : (
+        ) : isComingSoon(project) ? null : (
           <p className="label text-faint" title="Awaiting real content">
             [ Stack pending ]
           </p>
