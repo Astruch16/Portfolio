@@ -33,6 +33,7 @@ const PITCH = 8;
 /** CSS px. Very small on purpose: the lines should read before the symbols do. */
 const FONT_PX = 6.5;
 const LEVELS = 30;
+
 const INDEX_EVERY = 5;
 const REVEAL_MS = 1900;
 
@@ -73,10 +74,10 @@ const CASES: Record<number, [number, number][]> = {
   13: [[1, 2]], 14: [[3, 2]],
 };
 
-function survey(width: number, height: number): Mark[] {
+function survey(width: number, height: number, pitch: number, levels: number): Mark[] {
   const aspect = width / height;
-  const cols = Math.ceil(width / PITCH);
-  const rows = Math.ceil(height / PITCH);
+  const cols = Math.ceil(width / pitch);
+  const rows = Math.ceil(height / pitch);
   const stride = cols + 1;
 
   const field = new Float32Array(stride * (rows + 1));
@@ -84,14 +85,14 @@ function survey(width: number, height: number): Mark[] {
   let hi = -Infinity;
   for (let j = 0; j <= rows; j += 1) {
     for (let i = 0; i <= cols; i += 1) {
-      const v = elevation((i * PITCH) / height, (j * PITCH) / height, aspect);
+      const v = elevation((i * pitch) / height, (j * pitch) / height, aspect);
       field[j * stride + i] = v;
       if (v < lo) lo = v;
       if (v > hi) hi = v;
     }
   }
 
-  const interval = (hi - lo) / (LEVELS + 1);
+  const interval = (hi - lo) / (levels + 1);
   const main = HILLS[0];
   const originX = main.x * width;
   const originY = main.y * height;
@@ -107,7 +108,7 @@ function survey(width: number, height: number): Mark[] {
       const cellHi = Math.max(a, b, c, d);
 
       const first = Math.max(1, Math.ceil((cellLo - lo) / interval));
-      const last = Math.min(LEVELS, Math.floor((cellHi - lo) / interval));
+      const last = Math.min(levels, Math.floor((cellHi - lo) / interval));
 
       for (let k = first; k <= last; k += 1) {
         const level = lo + k * interval;
@@ -115,16 +116,16 @@ function survey(width: number, height: number): Mark[] {
         const pairs = CASES[shape];
         if (!pairs) continue;
 
-        const x0 = i * PITCH;
-        const y0 = j * PITCH;
+        const x0 = i * pitch;
+        const y0 = j * pitch;
         const lerp = (p: number, q: number) => (p === q ? 0.5 : (level - p) / (q - p));
         // Crossing point on each cell edge: top, right, bottom, left.
         const edge = (e: number): [number, number] => {
           switch (e) {
-            case 0: return [x0 + lerp(a, b) * PITCH, y0];
-            case 1: return [x0 + PITCH, y0 + lerp(b, c) * PITCH];
-            case 2: return [x0 + lerp(d, c) * PITCH, y0 + PITCH];
-            default: return [x0, y0 + lerp(a, d) * PITCH];
+            case 0: return [x0 + lerp(a, b) * pitch, y0];
+            case 1: return [x0 + pitch, y0 + lerp(b, c) * pitch];
+            case 2: return [x0 + lerp(d, c) * pitch, y0 + pitch];
+            default: return [x0, y0 + lerp(a, d) * pitch];
           }
         };
 
@@ -151,7 +152,20 @@ function survey(width: number, height: number): Mark[] {
   return marks;
 }
 
-export function SymbolTopography({ className }: { className?: string }) {
+export function SymbolTopography({
+  className,
+  pitch = PITCH,
+  fontPx = FONT_PX,
+  levels = LEVELS,
+}: {
+  className?: string;
+  /** Px between symbols along a contour, and the survey grid's pitch. */
+  pitch?: number;
+  /** Symbol size in px. */
+  fontPx?: number;
+  /** How many contours between the lowest and highest ground. */
+  levels?: number;
+}) {
   const canvas = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -189,13 +203,14 @@ export function SymbolTopography({ className }: { className?: string }) {
       ctx.clearRect(0, 0, width, height);
       // Weight must be a multiple of 100: the canvas font shorthand silently
       // rejects anything else and falls back to 10px sans-serif.
-      ctx.font = `500 ${FONT_PX}px ${family}`;
+      ctx.font = `500 ${fontPx}px ${family}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
-      const marks = survey(width, height);
+      const marks = survey(width, height, pitch, levels);
 
-      // Only the first draw spreads out; a resize redraws in place.
+      // Only the first draw spreads out; a resize or a new survey redraws in
+      // place.
       if (still || revealed) {
         paint(marks, 0, marks.length);
         return;
@@ -247,7 +262,8 @@ export function SymbolTopography({ className }: { className?: string }) {
       cancelAnimationFrame(resizeFrame);
       observer.disconnect();
     };
-  }, []);
+    // Re-surveyed when the survey itself changes — the playground drives these.
+  }, [pitch, fontPx, levels]);
 
   return <canvas ref={canvas} aria-hidden className={cn("block h-full w-full", className)} />;
 }

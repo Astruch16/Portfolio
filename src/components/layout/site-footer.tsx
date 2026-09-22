@@ -31,8 +31,7 @@ import { cn } from "@/lib/utils";
  * on one, the homepage and contact itself, rather than asking twice.
  */
 
-/** Routes with a page behind them — Playground is in the nav but not built. */
-const ROUTES = navItems.filter((item) => item.href !== "/playground");
+const ROUTES = navItems;
 
 /** Pages that already close on their own invitation to get in touch. */
 const HAS_OWN_INVITATION = new Set(["/", "/contact"]);
