@@ -51,7 +51,7 @@ export function SculptureSpecimen() {
       title="The sculpture"
       where="The hero"
       href="/"
-      note="A few thousand particles carrying their position in all six forms at once. One shader blends between them, so a morph is one draw call rather than six models. The flat canvas draws the same forms for phones and reduced motion, and never downloads three.js."
+      note="A few thousand particles carrying their position in all six forms at once. One shader blends between them, so a morph is one draw call rather than six models. The flat canvas runs the same morph, lift and sway on the CPU for phones and reduced motion, and never downloads three.js."
       stageClassName="aspect-4/3"
       controls={
         <>
@@ -77,7 +77,7 @@ export function SculptureSpecimen() {
         <SculptureStatic fit={1} lift={0} shift={0} />
       )}
       <p className="label pointer-events-none absolute bottom-3 left-4 text-faint">
-        {renderer === "webgl" ? "Drag to turn · click to scatter" : "Drawn once, no interaction"}
+        {renderer === "webgl" ? "Drag to turn · click to scatter" : "Tap to scatter · no WebGL"}
       </p>
     </Exhibit>
   );
