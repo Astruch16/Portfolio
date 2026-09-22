@@ -819,3 +819,32 @@
   outline: 2px solid var(--color-accent);
   outline-offset: 6px;
 }
+
+/* --- Pointer affordance ---------------------------------------------------
+   Tailwind's reset gives buttons the arrow cursor, which leaves most of this
+   site's controls — the hero terminal's tabs, the form rail, every filter —
+   looking inert. Anything that can be pressed says so, and anything that
+   can't says that instead.
+-------------------------------------------------------------------------- */
+
+@layer base {
+  button,
+  [role="button"],
+  [role="tab"],
+  summary,
+  select,
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"],
+  input[type="submit"],
+  input[type="button"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
