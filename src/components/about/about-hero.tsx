@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useState } from "react";
 
 import { ArrowDown } from "lucide-react";
 import { motion, useScroll, useTransform } from "motion/react";
@@ -9,6 +9,8 @@ import { RouteStrip } from "@/components/about/route-strip";
 import { SymbolTopography } from "@/components/about/symbol-topography";
 import { sequenceToneLight } from "@/components/case/sequence-tones";
 import { StatusDot } from "@/components/layout/status-dot";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { usePointerParallax } from "@/hooks/use-pointer-parallax";
 import { Lift, MaskReveal } from "@/components/motion/reveal";
 import { about } from "@/data/about";
 import { site } from "@/data/site";
@@ -55,21 +57,35 @@ function goToChapter(
 
 export function AboutHero() {
   const { stops, beats } = about.path;
-  const section = useRef<HTMLElement>(null);
+  // Only the typography answers the pointer; the hook writes --px/--py on this
+  // container and the `depth` elements read them in CSS — the same layering the
+  // landing page's hero has.
+  const { ref: parallax } = usePointerParallax<HTMLDivElement>();
+  const still = useMediaQuery("(prefers-reduced-motion: reduce)");
 
-  // The ground drifts against the type as the opening leaves: the map travels
-  // slower than the page and the route sinks a little faster, which is the
-  // depth the pointer gives this hero on a desktop and nothing gave it on a
-  // phone. Transform only, so it costs no layout.
-  const { scrollYProgress } = useScroll({
-    target: section,
-    offset: ["start start", "end start"],
-  });
-  const groundY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
-  const typeY = useTransform(scrollYProgress, [0, 1], [0, -40]);
-  const routeY = useTransform(scrollYProgress, [0, 1], [0, 26]);
-  const fade = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+  // The opening is held while the story rides over it, exactly as the landing
+  // page's hero is held while the work rides over that — so it recedes rather
+  // than scrolling away, and the ground behind it drifts at its own rate.
+  //
+  // Measured against the viewport rather than the section: a sticky element
+  // never moves relative to the scrollport, so a target-based `useScroll`
+  // would sit at zero forever.
+  const { scrollY } = useScroll();
+  const [viewport, setViewport] = useState(0);
+
+  useEffect(() => {
+    const measure = () => setViewport(window.innerHeight);
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
+  const range = viewport || 1;
+  const groundY = useTransform(scrollY, [0, range], [0, 150]);
+  const glowY = useTransform(scrollY, [0, range], [0, 260]);
+  const typeY = useTransform(scrollY, [0, range], [0, -60]);
+  const routeY = useTransform(scrollY, [0, range], [0, 26]);
+  const fade = useTransform(scrollY, [0, range], [1, 0.2]);
   const chapterOf = (stop: number) =>
     beats.findIndex((beat) => (beat.stops as readonly number[]).includes(stop));
 
@@ -86,9 +102,8 @@ export function AboutHero() {
 
   return (
     <section
-      ref={section}
       data-surface="dark"
-      className="relative isolate overflow-hidden bg-bg text-fg"
+      className="relative isolate overflow-hidden bg-bg text-fg lg:sticky lg:top-0 lg:h-svh"
     >
       {/* --- Ground ------------------------------------------------------- */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
@@ -102,7 +117,7 @@ export function AboutHero() {
         <motion.div
           className="absolute inset-0 opacity-[0.72] lg:opacity-100"
           style={{
-            y: groundY,
+            y: still ? 0 : groundY,
             maskImage:
               "linear-gradient(to bottom, rgb(0 0 0 / 0.22) 0%, rgb(0 0 0 / 0.5) 20%, #000 36%, #000 64%, rgb(0 0 0 / 0.42) 100%)",
           }}
@@ -111,7 +126,7 @@ export function AboutHero() {
         </motion.div>
         <motion.div
           style={{
-            y: glowY,
+            y: still ? 0 : glowY,
             background:
               "radial-gradient(circle, rgb(114 87 255 / 0.3) 0%, transparent 70%)",
           }}
@@ -119,10 +134,13 @@ export function AboutHero() {
         />
       </div>
 
-      <div className="shell flex min-h-[100svh] flex-col pt-[calc(var(--nav-h)+clamp(1.75rem,5vh,3.5rem))] pb-[clamp(1.75rem,4vh,2.75rem)]">
+      <div
+        ref={parallax}
+        className="shell flex min-h-[100svh] flex-col pt-[calc(var(--nav-h)+clamp(1.75rem,5vh,3.5rem))] pb-[clamp(1.75rem,4vh,2.75rem)] lg:h-full lg:min-h-0"
+      >
         {/* --- Top rail: eyebrow and readouts ---------------------------- */}
         <div className="flex flex-col gap-8 border-b border-hairline pb-5 lg:flex-row lg:items-end lg:justify-between">
-          <Lift as="p" className="label text-muted">
+          <Lift as="p" className="depth label text-muted" style={{ "--depth": 2 } as React.CSSProperties}>
             <span className="text-accent">03</span>
             <span className="text-faint"> / </span>
             {about.eyebrow}
@@ -156,7 +174,7 @@ export function AboutHero() {
 
         {/* --- Headline ------------------------------------------------ */}
         <motion.div
-          style={{ y: typeY, opacity: fade }}
+          style={still ? undefined : { y: typeY, opacity: fade }}
           className="flex flex-1 items-center py-[clamp(1.5rem,6vh,4.5rem)]"
         >
           <div className="relative isolate">
@@ -173,7 +191,10 @@ export function AboutHero() {
                   "radial-gradient(ellipse 58% 60% at 42% 52%, rgb(11 11 11 / 0.94) 0%, rgb(11 11 11 / 0.82) 42%, rgb(11 11 11 / 0.4) 68%, transparent 88%)",
               }}
             />
-            <h1 className="display text-[clamp(3rem,8.2vw,7.75rem)] leading-[0.86] text-fg">
+            <h1
+              className="depth display text-[clamp(3rem,8.2vw,7.75rem)] leading-[0.86] text-fg"
+              style={{ "--depth": 3 } as React.CSSProperties}
+            >
               {about.headline.map((line, i) => (
                 <MaskReveal key={line} delay={0.12 + i * 0.1}>
                   {line}
@@ -216,7 +237,7 @@ export function AboutHero() {
         </motion.div>
 
         {/* --- The route ------------------------------------------------- */}
-        <motion.div style={{ y: routeY }}>
+        <motion.div style={still ? undefined : { y: routeY }}>
           <div className="mb-4 flex items-baseline justify-between gap-6">
             <Lift delay={0.5} as="p" className="label text-faint">
               The route

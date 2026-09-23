@@ -57,7 +57,9 @@ export default function AboutPage() {
       <AboutHero />
 
       {/* === The path in — light ======================================== */}
-      <div data-surface="light" className="bg-bg">
+      {/* Rides over the pinned opening on a wide screen, so the hero recedes
+          under it rather than scrolling away. */}
+      <div data-surface="light" className="relative z-20 bg-bg">
         <section className="relative overflow-x-clip">
           <div className="shell py-[clamp(3rem,8vh,5rem)]">
             <PathStory headline={about.path.headline} stops={about.path.stops} beats={about.path.beats} />
