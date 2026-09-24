@@ -40,6 +40,189 @@ export type BuildLogEntry = {
 
 export const buildLog: BuildLogEntry[] = [
   {
+    id: "build-log-opening",
+    date: "2026-09-24",
+    project: "Portfolio",
+    type: "build",
+    title: "Opened this page on something worth looking at",
+    summary:
+      "The headline had the width of the page and used a third of it. The rest was empty.",
+    details: [
+      "Two columns: the headline takes the size the space was offering, and the log's own readings hold the other side.",
+      "Under them, the newest entry by date — kind, headline and summary — linking straight to itself in the feed, so anyone back to see what changed reads it without scrolling.",
+      "Four heavy lines at the display face's own leading read as one block of ink; they sit at 1.06 now, with the three that set up the last one each held a tone back.",
+    ],
+    technologies: ["Next.js", "Tailwind CSS"],
+    link: "/build-log",
+  },
+  {
+    id: "about-moments-drawn",
+    date: "2026-09-24",
+    project: "Portfolio",
+    type: "build",
+    title: "Drew the plates nobody photographed",
+    summary:
+      "The first chapter of the about page got its real words, and the empty photo slots beside them got drawings instead of stock pictures.",
+    details: [
+      "Nobody took a photograph of a groundwater model, and a stock hard hat would have said less than nothing.",
+      "Each slot carries a plate from that work in the same line language as the chapter figures: the ground in section with a well through the water table, a pumping test drawn down and recovering beside its sample vials, and contours resolving into rows of code between two brackets.",
+      "Each draws itself in as its moment develops, on the reveal the moments already ran on.",
+      "A real photograph still replaces one by setting an image, with no other change.",
+    ],
+    technologies: ["SVG", "Motion"],
+    link: "/about",
+  },
+  {
+    id: "about-hero-parallax",
+    date: "2026-09-23",
+    project: "Portfolio",
+    type: "build",
+    title: "Held the about page's opening while the story rides over it",
+    summary:
+      "The landing page's hero recedes under the work that follows it. The about page's opening just scrolled away.",
+    details: [
+      "Pinned on a wide screen: sixty pixels of travel and down to a fifth of its opacity as the story climbs over it.",
+      "Measured against the viewport rather than the section — a sticky element never moves relative to the scrollport, so a target-based scroll progress sits at zero forever.",
+      "The map drifts one way behind the type and the purple spill faster still, which is what carries the depth on a phone, where nothing pins.",
+      "The typography answers the pointer through the same hook the landing page's name uses.",
+    ],
+    technologies: ["Motion", "CSS"],
+    link: "/about",
+  },
+  {
+    id: "about-route-carries",
+    date: "2026-09-22",
+    project: "Portfolio",
+    type: "build",
+    title: "Made the route carry itself",
+    summary:
+      "Five stops don't fit across a phone, and a row that has to be swiped hides three of them behind an edge most people never touch.",
+    details: [
+      "The strip eases to the far end, waits, eases back, and goes again at about a word a second.",
+      "It stops the moment anyone takes hold of it and picks up a few seconds after they're done; under reduced motion it never starts.",
+      "It keeps its own idea of where it is: reading scrollLeft back each frame loses the fraction of a pixel a slow travel moves in 16ms, and it never gets going.",
+      "The chapter figures now draw when the plate itself arrives rather than when its chapter is current — on a phone the plate sits far below the band that decides that, so most had drawn unseen.",
+    ],
+    technologies: ["React", "requestAnimationFrame"],
+    link: "/about",
+  },
+  {
+    id: "truhost-coming-soon",
+    date: "2026-09-22",
+    project: "TruHost",
+    type: "decision",
+    title: "Coming soon beats three pending markers",
+    summary:
+      "A project with no status, statement or stack printed three placeholders wherever it appeared, which reads as a broken page rather than a project still to come.",
+    details: [
+      "The markers exist to tell me real content is owed — they were never meant for a visitor.",
+      "TruHost carries a Coming soon status now, and the places that would print a marker for it say so plainly instead.",
+      "It takes the amber the site marks waiting with, and doesn't pulse: the live signal belongs to something that's actually running.",
+      "Every other project keeps its markers.",
+    ],
+    technologies: ["TypeScript"],
+    link: "/work/truhost",
+  },
+  {
+    id: "about-mobile-layout",
+    date: "2026-09-22",
+    project: "Portfolio",
+    type: "fix",
+    title: "The about page was twice as long as it needed to be",
+    summary:
+      "16,400px on a phone, with a background nobody could see and an opening that ran a third of a screen past the fold.",
+    details: [
+      "The symbol map was pinned at 40% opacity below lg — a leftover from before the headline had its own scrim. It runs at 72% now.",
+      "Three full-width placeholder plates under every chapter, a screen each, came out below sm; written moments earn that space, placeholders don't.",
+      "The opening's five route stops, stacked two-up, took 300px; they run along a swipe instead and the section fits one screen.",
+      "11,300px now, from 16,400px.",
+    ],
+    technologies: ["Tailwind CSS"],
+    link: "/about",
+  },
+  {
+    id: "mobile-sculpture",
+    date: "2026-09-22",
+    project: "Portfolio",
+    type: "build",
+    title: "Brought the phone's sculpture to life",
+    summary:
+      "Without WebGL the sculpture was drawn once and left there, so a phone got a picture of it rather than the thing.",
+    details: [
+      "The flat canvas runs the same behaviour on the CPU: six forms blended by eased weights, particles lifting along their own direction through a morph, per-particle breath, a slow sway, and a tap that scatters it.",
+      "5,600 particles instead of 3,600, each drawn finer.",
+      "The extra work is paid for by drawing differently — every particle is a rect on one of seven paths, so a frame is seven fills rather than thousands of arcs.",
+      "Thirty frames a second, only while on screen and the tab is visible. At 4× CPU throttling on a 390px viewport the page still held sixty.",
+    ],
+    technologies: ["Canvas", "TypeScript"],
+    link: "/",
+  },
+  {
+    id: "pointer-cursor",
+    date: "2026-09-22",
+    project: "Portfolio",
+    type: "fix",
+    title: "Sixty controls that looked like text",
+    summary:
+      "Tailwind's reset gives buttons the arrow cursor, so most of this site's controls read as inert under the pointer.",
+    details: [
+      "An audit of all eight pages found the terminal's tabs and quick commands, the statement's form rail, the discipline panels, every filter on work and the build log, all 23 entry headers, the playground's controls and back to top.",
+      "One base rule rather than a class per button, so anything added later is covered: pointer for buttons, button and tab roles, summaries, selects and the checkbox, radio and range inputs; not-allowed for anything disabled.",
+      "The sculpture keeps its grab cursor: it's dragged, not pressed.",
+    ],
+    technologies: ["CSS", "Tailwind CSS"],
+    link: "/",
+  },
+  {
+    id: "playground",
+    date: "2026-09-22",
+    project: "Portfolio",
+    type: "ship",
+    title: "Built the playground out of the site itself",
+    summary:
+      "The nav had pointed at a page that didn't exist. It's now the site taken apart: four of its own live pieces, handed over with their controls.",
+    details: [
+      "Every specimen is the component the site actually ships, imported rather than rebuilt — turning a control turns the real thing, not a recording of it.",
+      "The sculpture switches form and renderer, WebGL against the flat canvas phones get, and scatters on command.",
+      "The name field re-samples whatever is typed into it, which meant porting the build-time generator's sampling pass into the browser; the hero keeps the generated data, since its own name never changes.",
+      "The topography's grid pitch, symbol size and contour count are sliders.",
+      "The uplink's canvases run off the same store the contact form writes to, so typing here drives them exactly as typing there does.",
+    ],
+    technologies: ["React", "Canvas", "React Three Fiber", "Next.js"],
+    link: "/playground",
+    featured: true,
+  },
+  {
+    id: "log-day-order",
+    date: "2026-09-21",
+    project: "Portfolio",
+    type: "fix",
+    title: "Entries that shared a date came out backwards",
+    summary:
+      "Four entries landed on one day and the log read them in the reverse of the order they were written.",
+    details: [
+      "The comparator never returned a tie, so two equal dates always swapped.",
+      "Comparing them properly leaves a stable sort, and each day reads newest-first as written — in the feed, the homepage's latest entries, and the contact page's pointer to the newest one.",
+    ],
+    technologies: ["TypeScript"],
+    link: "/build-log",
+  },
+  {
+    id: "headline-full-stops",
+    date: "2026-09-21",
+    project: "Portfolio",
+    type: "decision",
+    title: "Took the full stops off the headlines",
+    summary:
+      "Every page opened on a sentence that ended. A headline isn't a sentence.",
+    details: [
+      "Gone from the live statement, Work, Build Log, Contact, About and the 404.",
+      "The build log keeps the stops between its stacked words — those separate four words, they don't close one.",
+    ],
+    technologies: ["Typography"],
+    link: "/",
+  },
+  {
     id: "terminal-numbering",
     date: "2026-09-21",
     project: "Portfolio",
@@ -66,10 +249,10 @@ export const buildLog: BuildLogEntry[] = [
     details: [
       "shadcn/ui is a component library — it doesn't sit beside a language or a platform — so it left the hero terminal, the about toolkit, Expird's stack and two case studies.",
       "Python joins the backend; Redis sits with the databases.",
-      "AWS, Google Cloud, Azure, Cloudflare, Docker and Kubernetes join the infrastructure tab, each with a line of the command it's used through.",
+      "AWS, Google Cloud, Azure, Cloudflare, Docker and Kubernetes join the infrastructure tab, ESLint and Prettier beside CI, each with a line of the command it's used through.",
       "None of them was added to a project's stack: the lists say what I use, the projects say what each one is built with.",
     ],
-    technologies: ["Python", "Redis", "AWS", "Google Cloud", "Azure", "Cloudflare", "Docker", "Kubernetes"],
+    technologies: ["Python", "Redis", "AWS", "Google Cloud", "Azure", "Cloudflare", "Docker", "Kubernetes", "ESLint", "Prettier"],
     link: "/about",
   },
   {
@@ -203,7 +386,6 @@ export const buildLog: BuildLogEntry[] = [
     ],
     technologies: ["Motion", "Canvas", "Next.js"],
     link: "/",
-    featured: true,
   },
   {
     id: "hero-terminal",
@@ -462,7 +644,7 @@ export const currentlyBuilding: {
   },
   {
     name: "Portfolio",
-    focus: ["Interactive hero", "Homepage chapters", "Work archive & build log"],
+    focus: ["Playground specimens", "The about page", "Mobile polish"],
     status: "Active",
   },
 ];
