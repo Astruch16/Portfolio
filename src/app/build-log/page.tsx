@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 import { BuildLogFeed } from "@/components/build-log/build-log-feed";
+import { SignalField } from "@/components/visuals/signal-field";
 import { DrawLine, Lift, MaskReveal } from "@/components/motion/reveal";
 import {
   buildLog,
@@ -33,6 +34,7 @@ export default function BuildLogPage() {
   // Counted from the entries themselves, so the page can't claim a number the
   // log doesn't back up.
   const dates = buildLog.map((entry) => entry.date).sort();
+  const newest = [...buildLog].sort((a, b) => b.date.localeCompare(a.date))[0];
   const latest = dates[dates.length - 1].replaceAll("-", ".");
   const readings = [
     { value: pad(buildLog.length), label: "Entries" },
@@ -61,6 +63,11 @@ export default function BuildLogPage() {
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       >
+        {/* The drifting field the site's other dark openings carry. */}
+        <SignalField
+          strength={0.22}
+          className="absolute inset-x-0 top-0 h-[min(46rem,105svh)] w-full [mask-image:linear-gradient(to_bottom,#000_45%,transparent)]"
+        />
         <div
           className="absolute inset-0"
           style={{
@@ -80,59 +87,96 @@ export default function BuildLogPage() {
         />
       </div>
 
-      {/* --- Hero -------------------------------------------------------- */}
-      <header className="shell pt-[calc(var(--nav-h)+clamp(2.5rem,7vh,4.5rem))] pb-[clamp(2rem,5vh,3.25rem)]">
-        <Lift as="p" className="label text-muted">
-          <span className="text-accent">04</span>
-          <span className="text-faint"> / </span>
-          Build Log
-        </Lift>
+      {/* --- Hero --------------------------------------------------------
+          Two columns rather than one: the headline had the width of the page
+          and used a third of it. The log's own readings and its newest entry
+          hold the other side now — which is also the fastest way in for
+          anyone who came to see what changed. */}
+      <header className="shell grid gap-x-[clamp(2rem,4vw,4.5rem)] gap-y-12 pt-[calc(var(--nav-h)+clamp(2.5rem,8vh,5.5rem))] pb-[clamp(2.5rem,7vh,4.5rem)] lg:grid-cols-12 lg:items-end">
+        <div className="lg:col-span-7">
+          <Lift as="p" className="label text-muted">
+            <span className="text-accent">04</span>
+            <span className="text-faint"> / </span>
+            Build Log
+          </Lift>
 
-        <h1 className="display mt-[clamp(1.25rem,3.5vh,2.25rem)] text-[clamp(2.5rem,7vw,5rem)] leading-[0.92]">
-          <MaskReveal delay={0.04}>Building.</MaskReveal>
-          <MaskReveal delay={0.09}>Breaking.</MaskReveal>
-          <MaskReveal delay={0.14}>Learning.</MaskReveal>
-          <MaskReveal delay={0.19}>
-            <span className="text-accent">Shipping</span>
-          </MaskReveal>
-        </h1>
+          <h1 className="display mt-[clamp(1.5rem,4vh,2.5rem)] text-[clamp(2.75rem,8vw,6.25rem)] leading-[0.88]">
+            <MaskReveal delay={0.04}>Building.</MaskReveal>
+            <MaskReveal delay={0.09}>Breaking.</MaskReveal>
+            <MaskReveal delay={0.14}>Learning.</MaskReveal>
+            <MaskReveal delay={0.19}>
+              <span className="text-accent">Shipping</span>
+            </MaskReveal>
+          </h1>
 
-        <Lift
-          delay={0.24}
-          className="mt-[clamp(1.25rem,3vh,2rem)] max-w-[46rem]"
-        >
-          <p className="text-lead text-muted">
-            A running record of what I&rsquo;m building, fixing and learning
-            along the way.
-          </p>
-        </Lift>
+          <Lift delay={0.24} className="mt-[clamp(1.5rem,4vh,2.5rem)] max-w-[42rem]">
+            <p className="text-lead text-muted">
+              A running record of what I&rsquo;m building, fixing and learning
+              along the way.
+            </p>
+          </Lift>
 
-        <Lift
-          delay={0.3}
-          as="div"
-          className="mt-[clamp(1.75rem,4.5vh,2.75rem)] grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-4"
-        >
-          {readings.map((reading) => (
-            <div key={reading.label} className="bg-bg px-5 py-4">
-              <p className="font-mono text-[clamp(1.5rem,2.4vw,2.25rem)] leading-none tracking-[-0.04em] text-fg tabular-nums">
-                {reading.value}
-              </p>
-              <p className="label mt-2.5 text-faint">{reading.label}</p>
-            </div>
-          ))}
-        </Lift>
+          <Lift
+            delay={0.3}
+            as="p"
+            className="label mt-7 inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-fg"
+          >
+            <span aria-hidden className="signal-dot" />
+            Status / Active
+            <span className="text-faint">
+              · Updated manually · Latest {latest}
+            </span>
+          </Lift>
+        </div>
 
-        <Lift
-          delay={0.36}
-          as="p"
-          className="label mt-5 inline-flex items-center gap-2 text-fg"
-        >
-          <span aria-hidden className="signal-dot" />
-          Status / Active
-          <span className="text-faint">
-            · Updated manually · Latest {latest}
-          </span>
-        </Lift>
+        {/* --- What the log adds up to, and the newest thing in it ------- */}
+        <div className="lg:col-span-5">
+          <Lift
+            delay={0.2}
+            as="div"
+            className="grid grid-cols-2 gap-px border border-hairline bg-hairline"
+          >
+            {readings.map((reading) => (
+              <div key={reading.label} className="bg-bg px-5 py-5">
+                <p className="font-mono text-[clamp(1.75rem,2.6vw,2.5rem)] leading-none tracking-[-0.04em] text-fg tabular-nums">
+                  {reading.value}
+                </p>
+                <p className="label mt-2.5 text-faint">{reading.label}</p>
+              </div>
+            ))}
+          </Lift>
+
+          <Lift delay={0.28} className="mt-5">
+            <Link
+              href={`#${newest.id}`}
+              className="group/new relative isolate block overflow-hidden border border-hairline-strong p-6 transition-colors duration-500 hover:border-accent"
+            >
+              <span
+                aria-hidden
+                className="absolute inset-0 -z-10 origin-bottom scale-y-0 bg-[linear-gradient(to_top,rgb(114_87_255/0.16),transparent)] transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover/new:scale-y-100"
+              />
+              <span className="label flex items-center justify-between gap-4 text-faint">
+                <span>
+                  <span className="text-accent">Newest</span>
+                  <span className="text-faint/60"> / </span>
+                  <span className="tabular-nums">
+                    {newest.date.replaceAll("-", ".")}
+                  </span>
+                </span>
+                <ArrowUpRight
+                  aria-hidden
+                  strokeWidth={1.5}
+                  className="size-4 text-muted transition-all duration-300 ease-[var(--ease-out-expo)] group-hover/new:-translate-y-0.5 group-hover/new:translate-x-0.5 group-hover/new:text-fg"
+                />
+              </span>
+
+              <span className="mt-4 block text-[clamp(1.2rem,1.9vw,1.6rem)] leading-[1.15] tracking-[-0.02em] text-fg transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover/new:translate-x-1.5">
+                {newest.title}
+              </span>
+              <span className="mt-3 block text-muted">{newest.summary}</span>
+            </Link>
+          </Lift>
+        </div>
       </header>
 
       {/* --- Currently building ----------------------------------------- */}
