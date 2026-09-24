@@ -100,10 +100,19 @@ export default function BuildLogPage() {
             Build Log
           </Lift>
 
-          <h1 className="display mt-[clamp(1.5rem,4vh,2.5rem)] text-[clamp(2.75rem,8vw,6.25rem)] leading-[0.88]">
-            <MaskReveal delay={0.04}>Building.</MaskReveal>
-            <MaskReveal delay={0.09}>Breaking.</MaskReveal>
-            <MaskReveal delay={0.14}>Learning.</MaskReveal>
+          {/* Four heavy lines at the display face's own leading read as one
+              block of ink. Opened up, and the three that set up the last one
+              held a tone back, so the line that matters carries. */}
+          <h1 className="display mt-[clamp(1.5rem,4vh,2.5rem)] text-[clamp(2.5rem,7vw,5.5rem)] leading-[1.06]">
+            <MaskReveal delay={0.04}>
+              <span className="text-fg/70">Building.</span>
+            </MaskReveal>
+            <MaskReveal delay={0.09}>
+              <span className="text-fg/80">Breaking.</span>
+            </MaskReveal>
+            <MaskReveal delay={0.14}>
+              <span className="text-fg/90">Learning.</span>
+            </MaskReveal>
             <MaskReveal delay={0.19}>
               <span className="text-accent">Shipping</span>
             </MaskReveal>
