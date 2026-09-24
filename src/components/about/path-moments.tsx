@@ -1,9 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
-import { useRef } from "react";
+import {
+  motion,
+  useMotionValueEvent,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
+import { useRef, useState } from "react";
 
+import { MomentArt, type MomentArtKind } from "@/components/about/moment-art";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
@@ -24,8 +31,10 @@ import { cn } from "@/lib/utils";
 export type Moment = {
   title: string;
   note: string;
-  /** A file in /public. Without it the slot shows as a pending photo. */
+  /** A file in /public. Takes the slot over from a drawing when one exists. */
   image?: string;
+  /** A drawn plate, for a moment no photograph was ever taken of. */
+  art?: MomentArtKind;
   /** Marks template copy that has not been written yet. */
   placeholder?: boolean;
 };
@@ -38,6 +47,13 @@ const CORNERS = [
 ] as const;
 
 const pad = (i: number) => String(i + 1).padStart(2, "0");
+
+/** What each drawing is, stamped on its plate the way a sheet carries a title. */
+const ART_LABEL: Record<MomentArtKind, string> = {
+  "cross-section": "Section",
+  "field-sheet": "Readings",
+  crossover: "Crossing",
+};
 
 function MomentItem({
   moment,
@@ -61,6 +77,11 @@ function MomentItem({
   const clipPath = useTransform(reveal, (v) => `inset(${((1 - v) * 100).toFixed(1)}% 0 0 0)`);
   const rise = useTransform(reveal, [0, 1], [18, 0]);
   const dot = useTransform(reveal, [0, 0.35], [0.4, 1]);
+  // The drawing waits for its plate to arrive, then draws itself in.
+  const [played, setPlayed] = useState(false);
+  useMotionValueEvent(reveal, "change", (value) => {
+    if (value > 0.35 && !played) setPlayed(true);
+  });
   const dotFill = useTransform(reveal, (v) => (v > 0.02 ? tone : "var(--surface-bg)"));
 
   return (
@@ -104,10 +125,26 @@ function MomentItem({
                   backgroundColor: `color-mix(in srgb, ${tone} 6%, transparent)`,
                 }}
               />
-              <span className="label absolute top-2.5 left-3 text-faint">
-                Photo {pad(index)}
-              </span>
-              <span className="label absolute right-3 bottom-2.5 text-faint">Pending</span>
+              {moment.art ? (
+                <>
+                  {/* Drawn rather than photographed: the plate develops in
+                      place as the moment does, on the same scrubbed reveal. */}
+                  <MomentArt kind={moment.art} tone={tone} play={still || played} />
+                  <span className="label absolute top-2.5 left-3 text-faint">
+                    Fig. {pad(index)}
+                  </span>
+                  <span className="label absolute right-3 bottom-2.5 text-faint">
+                    {ART_LABEL[moment.art]}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="label absolute top-2.5 left-3 text-faint">
+                    Photo {pad(index)}
+                  </span>
+                  <span className="label absolute right-3 bottom-2.5 text-faint">Pending</span>
+                </>
+              )}
             </>
           )}
         </motion.div>
