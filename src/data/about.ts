@@ -26,11 +26,14 @@ export const about = {
    * specifics — it describes the field, not Adam's own work in it. Replace it
    * with the real detail (what he did, where, for how long) before launch.
    *
-   * `moments` are PLACEHOLDER prompts, not copy: three beats under each
-   * chapter, each a heading and a one-line prompt for what belongs there, with
-   * a photo slot. They exist to show the design. Replace the title and note
-   * with the real moment, set `image` to a file in /public, and drop
-   * `placeholder` — the tag and the empty photo slot both disappear with it.
+   * `moments` are three beats under each chapter: a heading, what happened,
+   * and a plate beside it. The first chapter's are Adam's own words; the rest
+   * are still PLACEHOLDER prompts, marked as such. Replace the title and note
+   * with the real moment and drop `placeholder` — the tag disappears with it.
+   *
+   * The plate takes a photograph (`image`, a file in /public) if there is one.
+   * Where there never was one — nobody photographed a groundwater model — `art`
+   * names a drawing instead, in the same line language as the chapter figures.
    */
   path: {
     /** Heads the whole section, level with the panel's label. */
@@ -46,9 +49,21 @@ export const about = {
       {
         stops: [0],
         moments: [
-          { placeholder: true, title: "Where it began", note: "A line or two on how you got into hydrogeology." },
-          { placeholder: true, title: "What the work taught", note: "A line or two on the kind of problems you worked on." },
-          { placeholder: true, title: "The move away", note: "A line or two on what pulled you toward something new." },
+          {
+            title: "Where it began",
+            note: "I came to hydrogeology after two years of engineering at Thompson Rivers University. The field pulled me in because it had all of it at once \u2014 mathematics, physics, modelling and system dynamics. Finishing the degree meant transferring to Simon Fraser University in Burnaby for the final four years, and it was there, in 2017, that I wrote code and thought about system design for the first time.",
+            art: "cross-section",
+          },
+          {
+            title: "What the work taught",
+            note: "It was a rigorous program, split between the field and the lecture hall. It taught me how to work systems I could only measure indirectly, how to model them, and how to manage my own time. The problems were things like the sustainability of aquifer systems, the geochemistry of groundwater and petroleum, and computing flow values through one program after another.",
+            art: "field-sheet",
+          },
+          {
+            title: "The move away",
+            note: "Once I had learned to code, I was hooked \u2014 but I was years into the degree and close to the end, so I saw it through, even knowing I didn\u2019t want that career. I\u2019ve always been entrepreneurial, so when COVID hit I got my real estate licence, and I\u2019ve been practising for six years since, building and coding the whole way through. Now it\u2019s time to go at what I actually love, full force.",
+            art: "crossover",
+          },
         ],
         figure: "contours",
         // DRAFT — see the note above.

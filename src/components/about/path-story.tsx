@@ -371,13 +371,16 @@ export function PathStory({
             </p>
 
             {beat.moments?.length ? (
-              // Three photo slots per chapter, all of them still placeholders,
-              // took a phone's whole screen each and said nothing. They stay
-              // where there's a row to put them in.
+              // Written moments are worth a phone's screen; three empty photo
+              // slots and a prompt each are not, so those wait for a row to
+              // put them in.
               <PathMoments
                 moments={beat.moments}
                 tone={sequenceToneLight(beat.stops[beat.stops.length - 1], ACCENT)}
-                className="mt-[clamp(2.5rem,6vh,4rem)] hidden sm:block"
+                className={cn(
+                  "mt-[clamp(2.5rem,6vh,4rem)]",
+                  beat.moments.every((moment) => !moment.placeholder) ? undefined : "hidden sm:block",
+                )}
               />
             ) : null}
 
