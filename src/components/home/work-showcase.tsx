@@ -9,6 +9,7 @@ import { Lift, MaskReveal } from "@/components/motion/reveal";
 import { COMPOSITIONS } from "@/components/work/visuals";
 import { isComingSoon, type Project } from "@/data/projects";
 import type { CaseImage } from "@/lib/case-image";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { stackGroups } from "@/lib/stack-groups";
 import { cn } from "@/lib/utils";
 import { wordmarkProps } from "@/lib/wordmark";
@@ -51,9 +52,11 @@ function overhang(shots: CaseImage[]) {
   return Math.max(0, first * SECOND_TOP + second - first);
 }
 
-/** The group's total height, as a percentage of its width, plus room to drift. */
-function groupHeight(shots: CaseImage[]) {
-  return (FIRST_W * ratio(shots[0]) + overhang(shots)) * 100 + 14;
+/** The group's total height, as a percentage of its width, plus the room the
+ *  drift needs. A frame is clipped to the stage by the wipe, so anything the
+ *  drift carries past the edge is cut rather than shown. */
+function groupHeight(shots: CaseImage[], headroom: number) {
+  return (FIRST_W * ratio(shots[0]) + overhang(shots)) * 100 + headroom;
 }
 
 /* --- Stage ------------------------------------------------------------------ */
@@ -127,18 +130,21 @@ function Frame({
   active,
   count,
   progress,
+  drift,
 }: {
   item: ShowcaseItem;
   index: number;
   active: number;
   count: number;
   progress: MotionValue<number>;
+  /** Share of the full travel. A short stage gets less of it. */
+  drift: number;
 }) {
   const { project, shots } = item;
   const on = index === active;
   const span: [number, number] = [index / count, (index + 1) / count];
-  const back = useTransform(progress, span, [28, -28]);
-  const front = useTransform(progress, span, [64, -64]);
+  const back = useTransform(progress, span, [28 * drift, -28 * drift]);
+  const front = useTransform(progress, span, [64 * drift, -64 * drift]);
 
   // Wipes up out of the bottom to arrive, and away through the top to leave,
   // so scrolling down always reads as the next frame rising into place.
@@ -160,7 +166,7 @@ function Frame({
             style={
               {
                 // The width at which the group is exactly as tall as the stage.
-                "--fit": `${(10000 / groupHeight(shots)).toFixed(0)}cqh`,
+                "--fit": `${(10000 / groupHeight(shots, 14 + 26 * drift)).toFixed(0)}cqh`,
                 paddingBottom: shots[1] ? `${(overhang(shots) * 100).toFixed(2)}%` : undefined,
               } as React.CSSProperties
             }
@@ -333,6 +339,11 @@ export function WorkShowcase({ items }: { items: ShowcaseItem[] }) {
     offset: ["start center", "end center"],
   });
 
+  // A phone's stage is a third the height of a desktop's, so the same travel
+  // would carry the plates out of the frame the wipe clips them to.
+  const wide = useMediaQuery("(min-width: 1024px)");
+  const drift = wide ? 1 : 0.34;
+
   // Same band as the rest of the site's scroll chapters: whichever project
   // crosses the middle of the viewport owns the stage.
   useEffect(() => {
@@ -400,6 +411,7 @@ export function WorkShowcase({ items }: { items: ShowcaseItem[] }) {
                 active={active}
                 count={count}
                 progress={scrollYProgress}
+                drift={drift}
               />
             ))}
           </div>
