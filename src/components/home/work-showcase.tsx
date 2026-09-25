@@ -169,7 +169,7 @@ function Frame({
               <Plate
                 shot={shots[0]}
                 project={project}
-                sizes="(min-width: 1024px) 50vw, 1px"
+                sizes="(min-width: 1024px) 50vw, 100vw"
                 priority={index === 0}
               />
             </motion.div>
@@ -178,7 +178,7 @@ function Frame({
                 style={{ y: front, top: `${(SECOND_TOP * 100).toFixed(0)}%` }}
                 className="absolute right-0 w-[52%] shadow-[0_40px_80px_-30px_rgb(0_0_0/0.9)]"
               >
-                <Plate shot={shots[1]} project={project} sizes="(min-width: 1024px) 28vw, 1px" />
+                <Plate shot={shots[1]} project={project} sizes="(min-width: 1024px) 28vw, 52vw" />
               </motion.div>
             ) : null}
           </div>
@@ -230,7 +230,7 @@ function StatusPill({ status }: { status: Project["status"] }) {
 }
 
 function Chapter({ item, index }: { item: ShowcaseItem; index: number }) {
-  const { project, shots } = item;
+  const { project } = item;
   const wordmark = wordmarkProps(project);
   const stack = stackGroups(project);
 
@@ -238,17 +238,8 @@ function Chapter({ item, index }: { item: ShowcaseItem; index: number }) {
     <article
       id={`project-${project.slug}`}
       data-showcase-index={index}
-      className="flex scroll-mt-[calc(var(--nav-h)+1rem)] flex-col justify-center py-[clamp(3.5rem,9vh,6rem)] lg:min-h-[78svh] lg:py-16"
+      className="flex min-h-[54svh] scroll-mt-[calc(var(--nav-h)+1rem)] flex-col justify-center py-[clamp(2.5rem,7vh,6rem)] lg:min-h-[78svh] lg:py-16"
     >
-      {/* Below lg there's no stage, so each project brings its own visual. */}
-      <Lift onView className="mb-10 lg:hidden">
-        {shots.length ? (
-          <Plate shot={shots[0]} project={project} sizes="100vw" />
-        ) : (
-          <Placeholder project={project} />
-        )}
-      </Lift>
-
       <Lift onView className="flex flex-wrap items-center justify-between gap-4">
         <span className="label text-muted">
           <span style={{ color: project.accent }}>{project.index}</span>
@@ -365,9 +356,18 @@ export function WorkShowcase({ items }: { items: ShowcaseItem[] }) {
 
   return (
     <div ref={container} className="shell relative lg:grid lg:grid-cols-12 lg:gap-x-[clamp(2rem,4vw,4.5rem)]">
-      {/* --- The stage --------------------------------------------------- */}
-      <div className="hidden lg:col-span-7 lg:block">
-        <div className="sticky top-[calc(var(--nav-h)+1.5rem)] flex h-[calc(100svh-var(--nav-h)-3rem)] flex-col">
+      {/* --- The stage ---------------------------------------------------
+          Held at every width. A phone used to get a still plate stacked above
+          each project's text, which is a different reading of the same set:
+          here the stage stays put and the projects move under it, so the
+          screenshots wipe and drift exactly as they do on a desktop. It takes
+          a band of the screen rather than the column beside the text. */}
+      {/* `contents` below lg: a sticky element can only travel inside its own
+          parent's box, and a wrapper that is only as tall as the stage lets it
+          travel nowhere. Dropping the box makes the container — as tall as
+          every project — the one it sticks within. */}
+      <div className="contents lg:col-span-7 lg:block">
+        <div className="sticky top-(--nav-h) z-10 -mx-(--gutter) flex h-[calc(46svh+0.75rem)] flex-col bg-bg px-(--gutter) pt-3 pb-4 lg:top-[calc(var(--nav-h)+1.5rem)] lg:mx-0 lg:h-[calc(100svh-var(--nav-h)-3rem)] lg:bg-transparent lg:px-0 lg:pt-0 lg:pb-0">
           <div className="flex items-baseline justify-between gap-6 border-b border-hairline pb-3">
             <p className="label text-muted" aria-live="polite">
               <span className="text-faint">Fig. </span>
@@ -465,7 +465,8 @@ function Segment({
           active ? "text-fg" : "text-faint group-hover/seg:text-muted",
         )}
       >
-        {project.index} {project.name}
+        {project.index}
+        <span className="hidden sm:inline"> {project.name}</span>
       </span>
     </a>
   );
