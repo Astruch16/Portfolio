@@ -64,34 +64,72 @@ export function LogChapter() {
               <span className="text-accent">03</span>
               <span className="text-faint"> / </span>Build log
             </Lift>
-            <h2 id="log-heading" className="display mt-[clamp(1.5rem,4vh,2.5rem)] text-[clamp(2.5rem,5vw,4.75rem)] leading-[0.9]">
-              <MaskReveal onView delay={0.05}>Building.</MaskReveal>
-              <MaskReveal onView delay={0.1}>Breaking.</MaskReveal>
-              <MaskReveal onView delay={0.15}>Learning.</MaskReveal>
+            {/* Four heavy lines at the face's own leading read as one block of
+                ink; opened up, with the three that set up the last one each
+                held a tone back, the same way the log's own page carries it. */}
+            <h2
+              id="log-heading"
+              className="display mt-[clamp(1.5rem,4vh,2.5rem)] text-[clamp(2.25rem,4.4vw,4rem)] leading-[1.06]"
+            >
+              <MaskReveal onView delay={0.05}>
+                <span className="text-fg/70">Building.</span>
+              </MaskReveal>
+              <MaskReveal onView delay={0.1}>
+                <span className="text-fg/80">Breaking.</span>
+              </MaskReveal>
+              <MaskReveal onView delay={0.15}>
+                <span className="text-fg/90">Learning.</span>
+              </MaskReveal>
               <MaskReveal onView delay={0.2}>
-                <span className="text-accent">Shipping.</span>
+                <span className="text-accent">Shipping</span>
               </MaskReveal>
             </h2>
-            <Lift onView delay={0.25} as="p" className="mt-6 max-w-[34ch] text-muted">
+            <Lift
+              onView
+              delay={0.25}
+              as="p"
+              className="mt-[clamp(1.75rem,4vh,2.5rem)] max-w-[34ch] text-muted"
+            >
               A running record of what I&rsquo;m building, fixing and learning along the way.
             </Lift>
 
-            <Lift onView delay={0.3} className="mt-10 border-t border-hairline pt-4">
-              <p className="label text-faint">
-                <span className="text-fg tabular-nums">{String(buildLog.length).padStart(2, "0")}</span> entries
+            {/* A wrapped row of four coloured chips under a count read as one
+                crowded line. One kind to a rule, counts stacked down the right
+                edge: the same numbers, read at a glance. */}
+            <Lift
+              onView
+              delay={0.3}
+              className="mt-[clamp(2.5rem,6vh,3.5rem)] max-w-[24rem]"
+            >
+              <p className="label flex items-baseline justify-between gap-4 border-b border-hairline pb-3 text-faint">
+                Entries
+                <span className="font-mono text-[1.75rem] leading-none tracking-[-0.04em] text-fg tabular-nums">
+                  {String(buildLog.length).padStart(2, "0")}
+                </span>
               </p>
-              <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+              <ul>
                 {tally.map(({ type, count }) => (
-                  <li key={type} className="label flex items-center gap-2 text-muted">
-                    <span aria-hidden className="block size-1.5 rounded-full" style={{ backgroundColor: TYPE_META[type].color }} />
-                    {TYPE_META[type].filter}
-                    <span className="text-faint tabular-nums">{count}</span>
+                  <li
+                    key={type}
+                    className="label flex items-baseline justify-between gap-4 border-b border-hairline py-3 text-muted"
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <span
+                        aria-hidden
+                        className="block size-1.5 rounded-full"
+                        style={{ backgroundColor: TYPE_META[type].color }}
+                      />
+                      {TYPE_META[type].filter}
+                    </span>
+                    <span className="text-fg tabular-nums">
+                      {String(count).padStart(2, "0")}
+                    </span>
                   </li>
                 ))}
               </ul>
             </Lift>
 
-            <Lift onView delay={0.36} className="mt-10">
+            <Lift onView delay={0.36} className="mt-[clamp(2.25rem,5vh,3rem)]">
               <Link
                 href="/build-log"
                 className="group/log label inline-flex items-center gap-4 border border-hairline-strong px-5 py-3.5 text-fg transition-colors hover:border-accent"
